@@ -33,5 +33,3 @@ google-services.json
 # Android Profiling
 *.hprof
 # Secrets et clés
-.env
-clé de validation.txt
