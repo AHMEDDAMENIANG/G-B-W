@@ -1,1 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Paiement Pi</title>
+    <!-- Chargement du SDK Pi -->
+    <script src="https://minepi.com"></script>
+</head>
+<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
+    <h1>Ma Plateforme Business</h1>
+    <p>Cliquez ci-dessous pour tester la transaction sur le Testnet</p>
+    
+    <button id="pay-button" style="padding: 15px 30px; background: #673ab7; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        Payer 1 Test-Pi
+    </button>
 
+    <script>
+        const Pi = window.Pi;
+        Pi.init({ version: "2.0", sandbox: true }); // sandbox: true pour le Testnet
+
+        async function createPayment() {
+            try {
+                const payment = await Pi.createPayment({
+                    amount: 1,
+                    memo: "Test de déploiement étape 10",
+                    metadata: { orderId: 123 }
+                }, {
+                    onReadyForServerApproval: (paymentId) => {
+                        console.log("Paiement en attente d'approbation serveur :", paymentId);
+                        // Normalement, votre serveur doit approuver ici
+                    },
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        console.log("Transaction terminée sur la blockchain :", txid);
+                        alert("Paiement réussi !");
+                    },
+                    onCancel: (paymentId) => console.log("Paiement annulé"),
+                    onError: (error, payment) => console.error("Erreur :", error)
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        document.getElementById('pay-button').onclick = createPayment;
+    </script>
+</body>
+</html>
