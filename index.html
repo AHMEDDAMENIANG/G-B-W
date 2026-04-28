@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Test Paiement Pi - GBW</title>
-    <script src="https://minepi.com"></script>
-    <script src="https://minepi.com"></script>
+    <script src=https://sdk.minepi.com></script>
 </head>
 <body style="text-align: center; padding-top: 50px; font-family: Arial, sans-serif;">
 
@@ -26,7 +25,7 @@
           metadata: { orderId: "test-101" },
         }, {
           onReadyForServerApproval: function(paymentId) {
-            console.log("Paiement ID à approuver :", paymentId);
+            console.log("ID à approuver :", paymentId);
           },
           onReadyForServerCompletion: function(paymentId, txid) {
             alert("Transaction réussie !");
