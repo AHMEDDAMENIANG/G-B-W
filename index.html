@@ -2,47 +2,42 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Paiement Pi</title>
-    <!-- Chargement du SDK Pi -->
+    <title>Test Paiement Pi - GBW</title>
+    <!-- CORRECTION ICI : Le lien doit être sdk.minepi.com -->
     <script src="https://minepi.com"></script>
 </head>
-<body style="font-family: sans-serif; text-align: center; padding-top: 50px;">
-    <h1>Ma Plateforme Business</h1>
-    <p>Cliquez ci-dessous pour tester la transaction sur le Testnet</p>
+<body style="text-align: center; padding-top: 50px; font-family: Arial, sans-serif;">
+
+    <h1>Ma Plateforme Business (GBW)</h1>
+    <p>Étape 10 : Test de transaction</p>
     
-    <button id="pay-button" style="padding: 15px 30px; background: #673ab7; color: white; border: none; border-radius: 5px; cursor: pointer;">
-        Payer 1 Test-Pi
+    <button id="btn-payment" style="padding: 15px 30px; background: #673ab7; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        Payer 0.1 Pi pour test
     </button>
 
     <script>
-        const Pi = window.Pi;
-        Pi.init({ version: "2.0", sandbox: true }); // sandbox: true pour le Testnet
+      const Pi = window.Pi;
+      // Initialisation (sandbox: true pour utiliser les Test-Pi)
+      Pi.init({ version: "2.0", sandbox: true }); 
 
-        async function createPayment() {
-            try {
-                const payment = await Pi.createPayment({
-                    amount: 1,
-                    memo: "Test de déploiement étape 10",
-                    metadata: { orderId: 123 }
-                }, {
-                    onReadyForServerApproval: (paymentId) => {
-                        console.log("Paiement en attente d'approbation serveur :", paymentId);
-                        // Normalement, votre serveur doit approuver ici
-                    },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        console.log("Transaction terminée sur la blockchain :", txid);
-                        alert("Paiement réussi !");
-                    },
-                    onCancel: (paymentId) => console.log("Paiement annulé"),
-                    onError: (error, payment) => console.error("Erreur :", error)
-                });
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        document.getElementById('pay-button').onclick = createPayment;
+      document.getElementById('btn-payment').onclick = function() {
+        Pi.createPayment({
+          amount: 0.1,
+          memo: "Test Etape 10 GBW",
+          metadata: { orderId: "test-101" },
+        }, {
+          onReadyForServerApproval: function(paymentId) {
+            console.log("Paiement ID à approuver par votre serveur :", paymentId);
+            // ATTENTION : Pour valider l'étape 10, il FAUT un backend ici.
+            // Sans backend, la transaction restera "Pending" (En attente).
+          },
+          onReadyForServerCompletion: function(paymentId, txid) {
+            alert("Félicitations ! Transaction terminée : " + txid);
+          },
+          onCancel: function(paymentId) { console.log("Paiement annulé"); },
+          onError: function(error, payment) { console.error("Erreur :", error); },
+        });
+      };
     </script>
 </body>
 </html>
