@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Test Paiement Pi - GBW</title>
-    <!-- CORRECTION ICI : Le lien doit être sdk.minepi.com -->
+    <script src="https://minepi.com"></script>
     <script src="https://minepi.com"></script>
 </head>
 <body style="text-align: center; padding-top: 50px; font-family: Arial, sans-serif;">
@@ -17,7 +17,6 @@
 
     <script>
       const Pi = window.Pi;
-      // Initialisation (sandbox: true pour utiliser les Test-Pi)
       Pi.init({ version: "2.0", sandbox: true }); 
 
       document.getElementById('btn-payment').onclick = function() {
@@ -27,15 +26,13 @@
           metadata: { orderId: "test-101" },
         }, {
           onReadyForServerApproval: function(paymentId) {
-            console.log("Paiement ID à approuver par votre serveur :", paymentId);
-            // ATTENTION : Pour valider l'étape 10, il FAUT un backend ici.
-            // Sans backend, la transaction restera "Pending" (En attente).
+            console.log("Paiement ID à approuver :", paymentId);
           },
           onReadyForServerCompletion: function(paymentId, txid) {
-            alert("Félicitations ! Transaction terminée : " + txid);
+            alert("Transaction réussie !");
           },
-          onCancel: function(paymentId) { console.log("Paiement annulé"); },
-          onError: function(error, payment) { console.error("Erreur :", error); },
+          onCancel: function(paymentId) { console.log("Annulé"); },
+          onError: function(error, payment) { console.error("Erreur:", error); },
         });
       };
     </script>
