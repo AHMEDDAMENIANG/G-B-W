@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Test Paiement Pi - GBW</title>
-    script src="https://minepi.com"></script>
+    <!-- Voici la ligne précise du SDK que vous devez utiliser -->
+    <script src="https://minepi.com"></script>
 </head>
 <body style="text-align: center; padding-top: 50px; font-family: Arial, sans-serif;">
 
@@ -15,6 +16,7 @@
     </button>
 
     <script>
+      // Initialisation du SDK Pi
       const Pi = window.Pi;
       Pi.init({ version: "2.0", sandbox: true }); 
 
@@ -25,13 +27,14 @@
           metadata: { orderId: "test-101" },
         }, {
           onReadyForServerApproval: function(paymentId) {
-            console.log("ID à approuver :", paymentId);
+            console.log("ID de transaction à approuver sur votre serveur :", paymentId);
+            // Ici, vous devrez normalement envoyer cet ID à votre backend
           },
           onReadyForServerCompletion: function(paymentId, txid) {
-            alert("Transaction réussie !");
+            alert("Transaction réussie ! ID : " + txid);
           },
-          onCancel: function(paymentId) { console.log("Annulé"); },
-          onError: function(error, payment) { console.error("Erreur:", error); },
+          onCancel: function(paymentId) { console.log("Paiement annulé"); },
+          onError: function(error, payment) { console.error("Erreur de paiement:", error); },
         });
       };
     </script>
