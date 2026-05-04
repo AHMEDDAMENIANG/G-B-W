@@ -18,7 +18,7 @@
     <script>
       // Initialisation du SDK Pi
       const Pi = window.Pi;
-      Pi.init({ version: "2.0", sandbox: false }); 
+      Pi.init({ version: "2.0", sandbox: true }); 
 
       document.getElementById('btn-payment').onclick = function() {
         Pi.createPayment({
