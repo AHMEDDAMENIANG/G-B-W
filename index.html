@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Test Paiement Pi - GBW</title>
-    <!-- SDK Officiel uniquement -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://minepi.com"></script>
 </head>
 <body style="text-align: center; padding-top: 50px; font-family: Arial, sans-serif;">
 
@@ -16,28 +15,36 @@
     </button>
 
     <script>
-      // Initialisation du SDK Pi (Sandbox true pour le testnet)
       const Pi = window.Pi;
       Pi.init({ version: "2.0", sandbox: true }); 
 
       document.getElementById('btn-payment').onclick = function() {
+        console.log("Lancement du paiement...");
+        
         Pi.createPayment({
           amount: 0.1,
           memo: "Test Etape 10 GBW",
-          metadata: { orderId: "test-101" },
-          payment_id: "test_payment_" + Date.now() // Ajout d'un ID unique
+          metadata: { orderId: "test-101" }
         }, {
           onReadyForServerApproval: function(paymentId) {
-            console.log("Paiement créé avec l'ID :", paymentId);
-            // NOTE : Pour un test simple, l'étape s'arrêtera ici si vous n'avez pas de serveur Backend configuré.
+            console.log("Paiement créé. ID à envoyer au backend :", paymentId);
+            // C'EST ICI que vous devez normalement appeler votre serveur
+            // Pour l'étape 10, si vous n'avez pas de backend, le processus s'arrêtera ici.
           },
           onReadyForServerCompletion: function(paymentId, txid) {
-            alert("Transaction réussie ! ID : " + txid);
+            console.log("Le serveur a complété le paiement. TXID:", txid);
+            alert("Transaction réussie !");
           },
-          onCancel: function(paymentId) { console.log("Paiement annulé"); },
-          onError: function(error, payment) { console.error("Erreur de paiement:", error); },
+          onCancel: function(paymentId) {
+            console.log("Paiement annulé par l'utilisateur.");
+          },
+          onError: function(error, payment) {
+            console.error("Erreur de paiement détaillée :", error);
+            alert("Erreur : " + error.message);
+          },
         });
       };
     </script>
 </body>
 </html>
+
