@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Test Paiement Pi - GBW</title>
+    <!-- SDK Officiel uniquement -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://minepi.com"></script>
 </head>
 <body style="text-align: center; padding-top: 50px; font-family: Arial, sans-serif;">
 
@@ -16,7 +16,7 @@
     </button>
 
     <script>
-      // Initialisation du SDK Pi
+      // Initialisation du SDK Pi (Sandbox true pour le testnet)
       const Pi = window.Pi;
       Pi.init({ version: "2.0", sandbox: true }); 
 
@@ -25,10 +25,11 @@
           amount: 0.1,
           memo: "Test Etape 10 GBW",
           metadata: { orderId: "test-101" },
+          payment_id: "test_payment_" + Date.now() // Ajout d'un ID unique
         }, {
           onReadyForServerApproval: function(paymentId) {
-            console.log("ID de transaction à approuver sur votre serveur :", paymentId);
-            // Ici, vous devrez normalement envoyer cet ID à votre backend
+            console.log("Paiement créé avec l'ID :", paymentId);
+            // NOTE : Pour un test simple, l'étape s'arrêtera ici si vous n'avez pas de serveur Backend configuré.
           },
           onReadyForServerCompletion: function(paymentId, txid) {
             alert("Transaction réussie ! ID : " + txid);
