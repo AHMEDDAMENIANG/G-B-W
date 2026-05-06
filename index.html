@@ -1,58 +1,49 @@
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Mon Application Pi GBW</title>
-</head>
-<body>
+<script>
+    // 1. Initialisation
+    Pi.init({ version: "2.0", sandbox: true });
 
-    <h1>Mon Application Pi GBW</h1>
-    
-    <button id="btn-payment" style="display:block; padding: 15px; background: #673ab7; color: white; border-radius: 8px; cursor: pointer;">
-        Payer 0.1 Pi pour tester
-    </button>
+    // 2. Fonction de démarrage (Authentification)
+    async function startFlow() {
+        try {
+            const user = await Pi.authenticate(['payments'], onIncompletePaymentFound);
+            console.log("Connecté :", user.user.username);
 
-    <script>
-        // Initialisation avec le SDK chargé à la ligne 1
-        Pi.init({ version: "1.5", sandbox: true }); 
-
-        async function startFlow() {
-            try {
-                const user = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
-                console.log("Connecté :", user.username);
-                
-                const payBtn = document.getElementById('btn-payment');
-                if(payBtn) {
-                    payBtn.onclick = createPiPayment;
-                }
-            } catch (err) {
-                console.error("Erreur Pi Browser :", err);
+            const payBtn = document.getElementById('btn-payment');
+            if(payBtn) {
+                payBtn.onclick = createPiPayment;
             }
+        } catch (err) {
+            console.error("Erreur Pi Browser :", err);
         }
+    }
 
-        function createPiPayment() {
-            Pi.createPayment({
-                amount: 0.1,
-                memo: "Test Transaction GBW",
-                metadata: { orderId: "GBW-" + Date.now() }
-            }, {
-                onReadyForServerApproval: function(paymentId) {
-                    alert("Paiement envoyé ! ID : " + paymentId);
-                },
-                onReadyForServerCompletion: function(paymentId, txid) {
-                    alert("Transaction Réussie ! TXID : " + txid);
-                },
-                onCancel: function(paymentId) { console.log("Annulé"); },
-                onError: function(error, payment) { console.error("Erreur :", error); },
-            });
-        }
+    // 3. Fonction qui déclenche le paiement au clic sur le bouton
+    function createPiPayment() {
+        Pi.createPayment({
+            amount: 0.1,
+            memo: "Test Transaction GBW",
+            metadata: { orderId: "GBW-" + Date.now() }
+        }, {
+            onReadyForServerApproval: function(paymentId) {
+                alert("Paiement envoyé pour approbation ! ID : " + paymentId);
+            },
+            onReadyForServerCompletion: function(paymentId, txid) {
+                alert("Paiement terminé avec succès ! TXID : " + txid);
+            },
+            onCancel: function(paymentId) { 
+                console.log("Paiement annulé par l'utilisateur"); 
+            },
+            onError: function(error, payment) { 
+                console.error("Erreur lors du paiement", error); 
+            }
+        });
+    }
 
-        function onIncompletePaymentFound(payment) {
-            console.log("Paiement incomplet");
-        };
+    // 4. Gestion des paiements non terminés
+    function onIncompletePaymentFound(payment) {
+        console.log("Paiement incomplet détecté", payment);
+    }
 
-        window.onload = startFlow;
-    </script>
-</body>
-</html>
+    // Lancer le processus au chargement de la page
+    window.onload = startFlow;
+</script>
