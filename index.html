@@ -1,48 +1,56 @@
+<!-- 1. Le lien technique indispensable (SDK Pi) -->
+<script src="https://minepi.com"></script>
+
+<!-- 2. Un bouton pour tester le paiement (affiché après connexion) -->
+<button id="btn-payment" style="display:none; padding: 15px; background: #673ab7; color: white; border: none; border-radius: 8px; cursor: pointer;">
+  Payer 0.1 Pi pour tester
+</button>
+
+<!-- 3. Le script de fonctionnement -->
 <script>
-  const Pi = window.Pi;
-  // Assurez-vous que sandbox est 'true' pour vos tests sur le Testnet
+  // Initialisation du SDK
   Pi.init({ version: "2.0", sandbox: true }); 
 
   async function startFlow() {
     try {
-      // ÉTAPE A : Authentifier l'utilisateur
+      // Authentification automatique
       const user = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
-      console.log("Utilisateur connecté :", user.username);
+      console.log("Connecté :", user.username);
       
-      // ÉTAPE B : Configurer le bouton après connexion
-      document.getElementById('btn-payment').onclick = function() {
-        createPiPayment();
-      };
+      // On montre le bouton et on active le clic
+      const payBtn = document.getElementById('btn-payment');
+      if(payBtn) {
+        payBtn.style.display = "block";
+        payBtn.onclick = createPiPayment;
+      }
     } catch (err) {
-      console.error("Erreur d'authentification :", err);
+      console.error("Erreur : Ouvrez l'application dans le Pi Browser.");
     }
   }
 
   function createPiPayment() {
     Pi.createPayment({
       amount: 0.1,
-      memo: "Test Etape 10 GBW",
-      metadata: { orderId: "test-101" }
+      memo: "Test de transaction GBW",
+      metadata: { orderId: "GBW-" + Date.now() }
     }, {
       onReadyForServerApproval: function(paymentId) {
-        console.log("Paiement créé :", paymentId);
-        // INFO : Ici, vous devez normalement faire un 'fetch' vers votre serveur
-        // Exemple : fetch('/api/approve', { method: 'POST', body: JSON.stringify({paymentId}) });
-        alert("Paiement créé ! ID: " + paymentId + "\nEn attente de validation serveur...");
+        // Cette ID s'affichera quand vous cliquerez sur Payer
+        alert("Paiement créé avec succès ! ID : " + paymentId);
       },
       onReadyForServerCompletion: function(paymentId, txid) {
-        alert("Transaction réussie ! TXID: " + txid);
+        alert("Transaction terminée ! TXID : " + txid);
       },
-      onCancel: function(paymentId) { console.log("Annulé"); },
+      onCancel: function(paymentId) { console.log("Paiement annulé"); },
       onError: function(error, payment) { console.error("Erreur :", error); },
     });
   }
 
   function onIncompletePaymentFound(payment) {
-    console.log("Paiement non terminé trouvé :", payment);
-    // Optionnel : renvoyer vers votre serveur pour régulariser
+    console.log("Paiement incomplet trouvé");
   };
 
-  // Lancer le flux au chargement
-  startFlow();
+  // Lance tout au chargement de la page
+  window.onload = startFlow;
 </script>
+  const  async
