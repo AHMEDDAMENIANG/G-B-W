@@ -3,37 +3,31 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <!-- 1. CHARGEMENT DU SDK PI -->
-    <script src="https://minepi.com"></script>
+    <title>Mon Application Pi GBW</title>
 </head>
 <body>
 
     <h1>Mon Application Pi GBW</h1>
     
-    <!-- 2. BOUTON DE PAIEMENT -->
-    <button id="btn-payment" style="display:block; padding: 15px; background: #673ab7; color: white; border-radius: 8px;">
+    <button id="btn-payment" style="display:block; padding: 15px; background: #673ab7; color: white; border-radius: 8px; cursor: pointer;">
         Payer 0.1 Pi pour tester
     </button>
 
-    <!-- 3. LE SCRIPT BIEN ORDONNÉ -->
     <script>
-        // On initialise le SDK
+        // Initialisation avec le SDK chargé à la ligne 1
         Pi.init({ version: "2.0", sandbox: true }); 
 
         async function startFlow() {
             try {
-                // Authentification
                 const user = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
-                console.log("Utilisateur :", user.username);
+                console.log("Connecté :", user.username);
                 
-                // On affiche le bouton
                 const payBtn = document.getElementById('btn-payment');
                 if(payBtn) {
-                    payBtn.style.display = "block";
                     payBtn.onclick = createPiPayment;
                 }
             } catch (err) {
-                console.error("Erreur d'auth :", err);
+                console.error("Erreur Pi Browser :", err);
             }
         }
 
@@ -44,10 +38,10 @@
                 metadata: { orderId: "GBW-" + Date.now() }
             }, {
                 onReadyForServerApproval: function(paymentId) {
-                    alert("Paiement créé ! ID : " + paymentId);
+                    alert("Paiement envoyé ! ID : " + paymentId);
                 },
                 onReadyForServerCompletion: function(paymentId, txid) {
-                    alert("Succès ! TXID : " + txid);
+                    alert("Transaction Réussie ! TXID : " + txid);
                 },
                 onCancel: function(paymentId) { console.log("Annulé"); },
                 onError: function(error, payment) { console.error("Erreur :", error); },
@@ -58,7 +52,6 @@
             console.log("Paiement incomplet");
         };
 
-        // On lance la fonction au chargement
         window.onload = startFlow;
     </script>
 </body>
