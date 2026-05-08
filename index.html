@@ -1,49 +1,76 @@
-<script>
-    // 1. Initialisation
-    Pi.init({ version: "2.0", sandbox: true });
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOBAL BUSINESS WORLD</title>
+    
+    <!-- 1. CHARGEMENT DU SDK PI (INDISPENSABLE) -->
+    <script src="https://minepi.com"></script>
 
-    // 2. Fonction de démarrage (Authentification)
-    async function startFlow() {
-        try {
-            const user = await Pi.authenticate(['payments'], onIncompletePaymentFound);
-            console.log("Connecté :", user.user.username);
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f4f9; }
+        .container { text-align: center; padding: 20px; background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        button { background-color: #673ab7; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 8px; cursor: pointer; margin-top: 20px; }
+        button:hover { background-color: #512da8; }
+        #status { margin-top: 20px; color: #555; }
+    </style>
+</head>
+<body>
 
-            const payBtn = document.getElementById('btn-payment');
-            if(payBtn) {
-                payBtn.onclick = createPiPayment;
-            }
-        } catch (err) {
-            console.error("Erreur Pi Browser :", err);
-        }
-    }
+    <div class="container">
+        <h1>GLOBAL BUSINESS WORLD</h1>
+        <p>Test de transaction Pi Network</p>
+        
+        <button id="pay-button">Payer 1 Pi</button>
+        
+        <div id="status">En attente de connexion...</div>
+    </div>
 
-    // 3. Fonction qui déclenche le paiement au clic sur le bouton
-    function createPiPayment() {
-        Pi.createPayment({
-            amount: 0.1,
-            memo: "Test Transaction GBW",
-            metadata: { orderId: "GBW-" + Date.now() }
-        }, {
-            onReadyForServerApproval: function(paymentId) {
-                alert("Paiement envoyé pour approbation ! ID : " + paymentId);
-            },
-            onReadyForServerCompletion: function(paymentId, txid) {
-                alert("Paiement terminé avec succès ! TXID : " + txid);
-            },
-            onCancel: function(paymentId) { 
-                console.log("Paiement annulé par l'utilisateur"); 
-            },
-            onError: function(error, payment) { 
-                console.error("Erreur lors du paiement", error); 
-            }
-        });
-    }
+    <script>
+        // 2. INITIALISATION DU SDK
+        window.onload = function() {
+            const Pi = window.Pi;
+            Pi.init({ version: "2.0", sandbox: false });
 
-    // 4. Gestion des paiements non terminés
-    function onIncompletePaymentFound(payment) {
-        console.log("Paiement incomplet détecté", payment);
-    }
+            // Authentification automatique au chargement
+            Pi.authenticate(['payments', 'username'], onIncompletePaymentFound)
+                .then(function(auth) {
+                    document.getElementById('status').innerText = "Connecté en tant que : " + auth.user.username;
+                    console.log("Auth succès", auth);
+                })
+                .catch(function(error) {
+                    document.getElementById('status').innerText = "Erreur d'auth : " + error.message;
+                    console.error(error);
+                });
+        };
 
-    // Lancer le processus au chargement de la page
-    window.onload = startFlow;
-</script>
+        // 3. FONCTION DE PAIEMENT
+        document.getElementById('pay-button').onclick = function() {
+            const Pi = window.Pi;
+            
+            Pi.createPayment({
+                amount: 1.0,
+                memo: "Test de paiement GBW",
+                metadata: { orderId: 12345 },
+            }, {
+                onReadyForServerApproval: function(paymentId) {
+                    document.getElementById('status').innerText = "Approbation serveur en cours...";
+                    // Ici, votre serveur Vercel doit appeler l'API Pi /approve
+                },
+                onReadyForServerCompletion: function(paymentId, txid) {
+                    document.getElementById('status').innerText = "Finalisation en cours...";
+                    // Ici, votre serveur Vercel doit appeler l'API Pi /complete
+                },
+                onCancel: function(paymentId) { document.getElementById('status').innerText = "Paiement annulé."; },
+                onError: function(error, payment) { document.getElementById('status').innerText = "Erreur : " + error.message; }
+            });
+        };
+
+        // Gestion des paiements non terminés
+        function onIncompletePaymentFound(payment) {
+            console.log("Paiement incomplet trouvé :", payment);
+        };
+    </script>
+</body>
+</html>
