@@ -3,99 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLOBAL BUSINESS WORLD - Paiement Pi</title>
-    <!-- 1. CHARGEMENT DU SDK PI -->
+    <title>GLOBAL BUSINESS WORLD</title>
+    <!-- LE BON LIEN DU SDK PI -->
     <script src="https://minepi.com"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding: 50px; background-color: #121212; color: white; }
-        .btn { background: #ff9800; border: none; padding: 15px 30px; color: white; font-size: 18px; border-radius: 8px; cursor: pointer; }
-        .btn:disabled { background: #555; cursor: not-allowed; }
-        #status { margin-top: 20px; color: #bbb; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 50px; background-color: #121212; color: white; }
+        .container { max-width: 400px; margin: auto; border: 1px solid #333; padding: 20px; border-radius: 15px; background: #1e1e1e; }
+        .btn { background: #ff9800; border: none; padding: 15px 30px; color: white; font-size: 18px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; margin-top: 20px; }
+        .btn:disabled { background: #444; cursor: not-allowed; color: #888; }
+        #status { margin-top: 20px; color: #ff9800; font-size: 14px; }
+        h1 { color: #ff9800; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-    <h1>GLOBAL BUSINESS WORLD</h1>
-    <p>Test de transaction Pi Network</p>
+    <div class="container">
+        <h1>GLOBAL BUSINESS WORLD</h1>
+        <p>Test de transaction Pi Network</p>
 
-    <!-- BOUTON DESACTIVÉ PAR DÉFAUT -->
-    <button id="pay-button" class="btn" disabled>Payer 1 Pi</button>
-    
-    <div id="status">Initialisation du SDK...</div>
+        <!-- BOUTON DÉSACTIVÉ AU DÉPART -->
+        <button id="pay-button" class="btn" disabled>Payer 1 Pi</button>
+        
+        <div id="status">Chargement du SDK...</div>
+    </div>
 
     <script>
-        const Pi = window.Pi;
         const statusDiv = document.getElementById('status');
         const payButton = document.getElementById('pay-button');
 
-        // 2. INITIALISATION (Sandbox: true pour le test)
-        Pi.init({ version: "2.0", sandbox: true });
+        // Initialisation dès que la fenêtre est prête
+        window.onload = function() {
+            if (typeof Pi !== 'undefined') {
+                Pi.init({ version: "2.0", sandbox: true });
+                statusDiv.innerText = "SDK prêt. Connexion...";
+                auth();
+            } else {
+                statusDiv.innerText = "Erreur : SDK Pi introuvable.";
+            }
+        };
 
-        // 3. AUTHENTIFICATION AUTOMATIQUE AU CHARGEMENT
+        // Fonction d'authentification
         async function auth() {
             try {
                 const scopes = ['username', 'payments'];
                 
-                // Fonction pour gérer les paiements non terminés (obligatoire)
                 function onIncompletePaymentFound(payment) {
-                    console.log("Paiement incomplet trouvé", payment);
-                    statusDiv.innerText = "Finalisation d'un paiement en cours...";
-                    // Ici, vous devriez envoyer payment.identifier à votre backend
+                    console.log("Paiement incomplet :", payment);
                 };
 
                 const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
                 
                 statusDiv.innerText = "Connecté en tant que : " + authResult.user.username;
-                payButton.disabled = false; // On active le bouton seulement si l'auth réussit
+                payButton.disabled = false; // ACTIVE LE BOUTON
                 
                 payButton.onclick = () => createPayment(authResult.user.username);
 
             } catch (err) {
-                statusDiv.innerText = "Erreur de connexion : " + err.message;
+                statusDiv.innerText = "Veuillez ouvrir dans le Pi Browser.";
                 console.error(err);
             }
         }
 
-        // 4. FONCTION DE PAIEMENT
+        // Fonction de paiement
         function createPayment(username) {
             statusDiv.innerText = "Ouverture du portefeuille...";
 
             Pi.createPayment({
                 amount: 1.0,
-                memo: "Achat sur GBW par " + username,
-                metadata: { orderId: "COMMANDE_" + Date.now() },
+                memo: "Transaction Test GBW - " + username,
+                metadata: { orderId: "ID_" + Math.floor(Math.random() * 100000) },
             }, {
                 onReadyForServerApproval: function(paymentId) {
-                    statusDiv.innerText = "Approbation du serveur requise...";
-                    console.log("PaymentID à envoyer au backend:", paymentId);
-                    
-                    // ENVOI AU BACKEND (Vercel API)
+                    statusDiv.innerText = "Approbation serveur...";
                     fetch('/api/payments/approve', {
                         method: 'POST',
-                        body: JSON.stringify({ paymentId }),
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId })
                     });
                 },
                 onReadyForServerCompletion: function(paymentId, txid) {
-                    statusDiv.innerText = "Transaction réussie ! Finalisation...";
-                    
+                    statusDiv.innerText = "Paiement réussi !";
                     fetch('/api/payments/complete', {
                         method: 'POST',
-                        body: JSON.stringify({ paymentId, txid }),
-                        headers: { 'Content-Type': 'application/json' }
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ paymentId, txid })
                     });
                 },
-                onCancel: function(paymentId) {
-                    statusDiv.innerText = "Transaction annulée.";
-                },
-                onError: function(error, payment) {
-                    statusDiv.innerText = "Erreur de paiement : " + error.message;
-                },
+                onCancel: function(paymentId) { statusDiv.innerText = "Paiement annulé."; },
+                onError: function(error, payment) { statusDiv.innerText = "Erreur : " + error.message; },
             });
         }
-
-        // Lancer l'auth
-        auth();
     </script>
 </body>
 </html>
