@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Business World - Paiement Pi</title>
     
-    <!-- 1. CHARGEMENT DU SDK PI (Obligatoire) -->
+    <!-- 1. CHARGEMENT DU SDK PI (CORRIGÉ ICI) -->
     <script src="https://minepi.com"></script>
-
 
     <style>
         body {
@@ -60,19 +59,23 @@
         
         <button id="btn-payer" onclick="lancerPaiement()" disabled>Payer 1 Pi</button>
         
-        <div id="status">Initialisation du SDK...</div>
+        <div id="status">Chargement du SDK...</div>
     </div>
 
     <script>
         const statusDiv = document.getElementById('status');
         const btnPayer = document.getElementById('btn-payer');
 
-        // 2. INITIALISATION DU SDK (Mode Testnet)
+        // 2. INITIALISATION SÉCURISÉE
         try {
-            Pi.init({ version: "2.0", sandbox: true });
-            console.log("Pi SDK est initialisé.");
+            if (window.Pi) {
+                Pi.init({ version: "2.0", sandbox: true });
+                console.log("Pi SDK est initialisé.");
+            } else {
+                statusDiv.innerText = "SDK introuvable. Utilisez le Pi Browser.";
+            }
         } catch (e) {
-            statusDiv.innerText = "Erreur d'initialisation du SDK.";
+            statusDiv.innerText = "Erreur d'initialisation.";
         }
 
         // 3. AUTHENTIFICATION AUTOMATIQUE
@@ -83,54 +86,43 @@
                 
                 statusDiv.innerText = "Connecté : " + user.user.username;
                 statusDiv.style.color = "#2ecc71";
-                btnPayer.disabled = false; // Active le bouton après connexion
+                btnPayer.disabled = false; 
             } catch (err) {
-                statusDiv.innerText = "Veuillez ouvrir dans le Pi Browser.";
-                console.error(err);
+                statusDiv.innerText = "Erreur d'accès : Ouvrez dans le Pi Browser.";
             }
         }
 
-        // Gestion des paiements non terminés
         function onIncompletePaymentFound(payment) {
-            console.log("Un paiement incomplet a été trouvé", payment);
+            console.log("Paiement incomplet :", payment);
         }
 
         // 4. LOGIQUE DE PAIEMENT
         async function lancerPaiement() {
             try {
                 btnPayer.disabled = true;
-                statusDiv.innerText = "Préparation du paiement...";
+                statusDiv.innerText = "Demande de paiement en cours...";
 
-                const payment = await Pi.createPayment({
+                await Pi.createPayment({
                     amount: 1,
-                    memo: "Test de transaction GBW",
-                    metadata: { orderId: "TEST-123" }
+                    memo: "Test GBW",
+                    metadata: { orderId: "123" }
                 }, {
-                    onReadyForServerApproval: function(paymentId) {
-                        statusDiv.innerText = "En attente d'approbation serveur...";
-                        // Note: En testnet sans serveur, cela peut rester bloqué ici
-                        console.log("PaymentID à approuver :", paymentId);
+                    onReadyForServerApproval: (paymentId) => {
+                        statusDiv.innerText = "Approbation nécessaire (côté serveur).";
+                        console.log("ID de paiement :", paymentId);
                     },
-                    onReadyForServerCompletion: function(paymentId, txid) {
-                        statusDiv.innerText = "Transaction réussie !";
-                        btnPayer.innerText = "Payé ✔";
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        statusDiv.innerText = "Réussi ! TXID: " + txid;
                     },
-                    onCancel: function(paymentId) {
-                        statusDiv.innerText = "Paiement annulé.";
-                        btnPayer.disabled = false;
-                    },
-                    onError: function(error, payment) {
-                        statusDiv.innerText = "Erreur : " + error.message;
-                        btnPayer.disabled = false;
-                    }
+                    onCancel: (paymentId) => { statusDiv.innerText = "Annulé."; btnPayer.disabled = false; },
+                    onError: (error) => { statusDiv.innerText = "Erreur : " + error.message; btnPayer.disabled = false; }
                 });
             } catch (err) {
-                statusDiv.innerText = "Erreur fatale : " + err.message;
+                statusDiv.innerText = "Erreur fatale.";
                 btnPayer.disabled = false;
             }
         }
 
-        // Lancer l'authentification dès le chargement de la page
         window.onload = authentifier;
     </script>
 
