@@ -69,7 +69,7 @@
         // 2. INITIALISATION SÉCURISÉE
         try {
             if (window.Pi) {
-                Pi.init({ version: "2.0", sandbox: true });
+                 Pi.init({ version: "2.0", sandbox: false});
                 console.log("Pi SDK est initialisé.");
             } else {
                 statusDiv.innerText = "SDK introuvable. Utilisez le Pi Browser.";
