@@ -1,46 +1,51 @@
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Pi Network Transaction</title>
-  <script src="https://sdk.minepi.com/pi-sdk.js"></script> <!-- Intégration du SDK Pi Network -->
+    <title>GBW - Testnet</title>
+    <script src="https://minepi.com"></script>
 </head>
-<body>
-  <h1>Test de transaction Pi Network</h1>
-  
-  <button id="payButton">Payer 1 Pi</button>
-  
-  <script>
-    // Étape 1: Initialisez le Pi Network SDK
-    Pi.init({
-      appId: "votre_app_id", // Remplacez par votre identifiant unique d'application
-      callbackUrl: "https://votre-callback-url.com/pi-payment-result" // Remplacez par votre URL de retour valide
-    });
+<body style="text-align: center; padding-top: 50px; font-family: Arial;">
+    <h1>GLOBAL-BUSINESS-WORLD</h1>
+    <p>Statut : <span id="status">Chargement du SDK...</span></p>
 
-    // Étape 2: Ajoutez un événement au bouton pour effectuer une transaction
-    const payButton = document.getElementById("payButton");
-    payButton.addEventListener("click", function() {
-      // Logique du paiement
-      Pi.createPayment({
-        // Configuration du paiement
-        amount: 1, // Montant à payer (1 Pi dans ce cas)
-        memo: "Test de transaction", // Description/mémo de la transaction
-        metadata: { 
-          orderId: "12345" // Exemple: identifiant de commande
+    <button id="payButton" style="padding: 20px; background: #673ab7; color: white; border: none; border-radius: 10px; font-size: 20px;">
+        PAYER 1 PI (TEST)
+    </button>
+
+    <script>
+        const Pi = window.Pi;
+        
+        // Initialisation vitale
+        try {
+            Pi.init({ version: "2.0", sandbox: true });
+            document.getElementById('status').innerText = "SDK Prêt (Testnet)";
+            document.getElementById('status').style.color = "green";
+        } catch (e) {
+            document.getElementById('status').innerText = "Erreur SDK";
         }
-      })
-      .then(function (payment) {
-        // Réponse en cas de succès
-        console.log("Paiement en attente :", payment);
-        alert("Paiement créé avec succès. En attente de confirmation.");
-      })
-      .catch(function (error) {
-        // Gestion des erreurs
-        console.error("Erreur lors de la création du paiement :", error);
-        alert("Erreur lors de la création du paiement : " + error.message);
-      });
-    });
-  </script>
+
+        document.getElementById('payButton').addEventListener('click', async () => {
+            try {
+                const payment = await Pi.createPayment({
+                    amount: 1,
+                    memo: "Test Final GBW",
+                    metadata: { order: "10-10" }
+                }, {
+                    onReadyForServerApproval: (id) => {
+                        alert("Paiement créé ! ID: " + id);
+                        // Note : Normalement ici on appelle le backend pour approuver
+                    },
+                    onReadyForServerCompletion: (id, txid) => {
+                        alert("Succès ! Étape 10 validée. TXID: " + txid);
+                    },
+                    onCancel: (id) => { console.log("Annulé"); },
+                    onError: (err) => { alert("Erreur Pi : " + err.message); }
+                });
+            } catch (err) {
+                alert("Erreur de clic : " + err.message);
+            }
+        });
+    </script>
 </body>
 </html>
 
