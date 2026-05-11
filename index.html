@@ -6,7 +6,7 @@
     <title>Global Business World - Paiement Pi</title>
     
     <!-- Charger le SDK Pi -->
-    <script src="https://minepi.com"></script>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 
     <style>
         body {
@@ -43,12 +43,15 @@
             width: 100%;
             transition: 0.3s;
         }
+        button:hover:not(:disabled) { background-color: #d35400; }
         button:disabled { background-color: #7f8c8d; cursor: not-allowed; }
         #status {
             margin-top: 20px;
             font-size: 14px;
             color: #f1c40f;
         }
+        .success { color: #2ecc71; }
+        .error { color: #e74c3c; }
     </style>
 </head>
 <body>
@@ -66,72 +69,106 @@
         const statusDiv = document.getElementById('status');
         const btnPayer = document.getElementById('btn-payer');
 
-        // Initialisation du SDK Pi
-        try {
-            if (window.Pi) {
-                Pi.init({ version: "2.0", sandbox: true }); // Le mode sandbox est activé pour les tests
-                console.log("Pi SDK est initialisé.");
-            } else {
-                statusDiv.innerText = "SDK introuvable. Utilisez le Pi Browser.";
+        // Attendre le chargement du SDK Pi
+        function initializePiSDK() {
+            if (typeof window.Pi === 'undefined') {
+                statusDiv.innerText = "❌ SDK Pi non trouvé. Utilisez le Pi Browser.";
+                statusDiv.className = 'error';
+                console.error("Pi SDK non disponible");
+                return;
             }
-        } catch (e) {
-            statusDiv.innerText = "Erreur d'initialisation.";
+
+            try {
+                // Initialiser le SDK avec votre App ID
+                Pi.init({ 
+                    version: "2.0", 
+                    sandbox: false,  // Mode testnet, pas sandbox
+                    appId: "GLOBAL-BUSINESS-WORLD"  // ⚠️ REMPLACEZ PAR VOTRE APP ID RÉEL
+                });
+                console.log("✅ Pi SDK initialisé avec succès");
+                statusDiv.innerText = "SDK chargé. Authentification en cours...";
+                
+                // Authentifier après l'initialisation
+                authentifier();
+            } catch (e) {
+                statusDiv.innerText = "❌ Erreur lors de l'initialisation du SDK";
+                statusDiv.className = 'error';
+                console.error("Erreur d'initialisation :", e);
+            }
         }
 
-        // Authentification automatique
+        // Authentification de l'utilisateur
         async function authentifier() {
             try {
                 const scopes = ['payments'];
                 const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                statusDiv.innerText = "Connecté : " + user.user.username;
-                statusDiv.style.color = "#2ecc71";
-                btnPayer.disabled = false; 
+                
+                statusDiv.innerText = `✅ Connecté : ${user.user.username}`;
+                statusDiv.className = 'success';
+                btnPayer.disabled = false;
+                console.log("Utilisateur authentifié :", user);
             } catch (err) {
-                statusDiv.innerText = "Erreur d'accès : Ouvrez dans le Pi Browser.";
+                statusDiv.innerText = `❌ Erreur d'authentification : ${err.message}`;
+                statusDiv.className = 'error';
+                console.error("Erreur d'authentification :", err);
             }
         }
 
         // Callback pour les paiements incomplets
         function onIncompletePaymentFound(payment) {
-            console.log("Paiement incomplet :", payment);
+            console.log("Paiement incomplet détecté :", payment);
+            statusDiv.innerText = "⚠️ Paiement incomplet trouvé";
         }
 
         // Logique de paiement
         function lancerPaiement() {
             try {
                 btnPayer.disabled = true;
-                statusDiv.innerText = "Demande de paiement en cours...";
+                statusDiv.innerText = "💳 Demande de paiement en cours...";
 
                 Pi.createPayment({
                     amount: 1,
-                    memo: "Test GBW",
-                    metadata: { orderId: "123" }
+                    memo: "Test Global Business World",
+                    metadata: { orderId: "test_gbw_001" }
                 }, {
                     onReadyForServerApproval: (paymentId) => {
-                        statusDiv.innerText = "Approbation nécessaire (côté serveur).";
-                        console.log("ID de paiement :", paymentId);
+                        statusDiv.innerText = `⏳ En attente d'approbation serveur (ID: ${paymentId})`;
+                        console.log("Payment ID :", paymentId);
                     },
                     onReadyForServerCompletion: (paymentId, txid) => {
-                        statusDiv.innerText = "Réussi ! TXID: " + txid;
+                        statusDiv.innerText = `✅ Paiement réussi ! TXID: ${txid}`;
+                        statusDiv.className = 'success';
                         btnPayer.disabled = false;
                     },
                     onCancel: (paymentId) => { 
-                        statusDiv.innerText = "Annulé."; 
+                        statusDiv.innerText = "⛔ Paiement annulé"; 
+                        statusDiv.className = 'error';
                         btnPayer.disabled = false; 
                     },
-                    onError: (error) => { 
-                        statusDiv.innerText = "Erreur : " + error.message; 
+                    onError: (error, payment) => { 
+                        statusDiv.innerText = `❌ Erreur : ${error.message}`; 
+                        statusDiv.className = 'error';
+                        console.error("Erreur de paiement :", error, payment);
                         btnPayer.disabled = false; 
                     }
                 });
             } catch (err) {
-                statusDiv.innerText = "Erreur fatale.";
+                statusDiv.innerText = "❌ Erreur fatale lors du paiement";
+                statusDiv.className = 'error';
+                console.error("Erreur :", err);
                 btnPayer.disabled = false;
             }
         }
 
-        // Charger automatiquement et authentifier l'utilisateur
-        window.onload = authentifier;
+        // Initialiser le SDK au chargement de la page
+        window.addEventListener('load', initializePiSDK);
+        
+        // Initialiser aussi si le SDK est déjà disponible
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializePiSDK);
+        } else {
+            initializePiSDK();
+        }
     </script>
 
 </body>
