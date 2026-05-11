@@ -1,176 +1,46 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Business World - Paiement Pi</title>
-    
-    <!-- Charger le SDK Pi -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #000000;
-            color: #ffffff;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        .card {
-            background-color: #1c1c1c;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(230, 126, 34, 0.3);
-            width: 90%;
-            max-width: 400px;
-        }
-        h1 { color: #e67e22; font-size: 24px; margin-bottom: 5px; }
-        p { color: #bdc3c7; margin-bottom: 25px; }
-        button {
-            background-color: #e67e22;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 100%;
-            transition: 0.3s;
-        }
-        button:hover:not(:disabled) { background-color: #d35400; }
-        button:disabled { background-color: #7f8c8d; cursor: not-allowed; }
-        #status {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #f1c40f;
-        }
-        .success { color: #2ecc71; }
-        .error { color: #e74c3c; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Pi Network Transaction</title>
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script> <!-- Intégration du SDK Pi Network -->
 </head>
 <body>
+  <h1>Test de transaction Pi Network</h1>
+  
+  <button id="payButton">Payer 1 Pi</button>
+  
+  <script>
+    // Étape 1: Initialisez le Pi Network SDK
+    Pi.init({
+      appId: "votre_app_id", // Remplacez par votre identifiant unique d'application
+      callbackUrl: "https://votre-callback-url.com/pi-payment-result" // Remplacez par votre URL de retour valide
+    });
 
-    <div class="card">
-        <h1>GLOBAL BUSINESS WORLD</h1>
-        <p>Test de transaction Pi Network</p>
-        
-        <button id="btn-payer" onclick="lancerPaiement()" disabled>Payer 1 Pi</button>
-        
-        <div id="status">Chargement du SDK...</div>
-    </div>
-
-    <script>
-        const statusDiv = document.getElementById('status');
-        const btnPayer = document.getElementById('btn-payer');
-
-        // Attendre le chargement du SDK Pi
-        function initializePiSDK() {
-            if (typeof window.Pi === 'undefined') {
-                statusDiv.innerText = "❌ SDK Pi non trouvé. Utilisez le Pi Browser.";
-                statusDiv.className = 'error';
-                console.error("Pi SDK non disponible");
-                return;
-            }
-
-            try {
-                // Initialiser le SDK avec votre App ID
-                Pi.init({ 
-                    version: "2.0", 
-                    sandbox: false,  // Mode testnet, pas sandbox
-                    appId: "GLOBAL-BUSINESS-WORLD"
-                });
-                console.log("✅ Pi SDK initialisé avec succès");
-                statusDiv.innerText = "SDK chargé. Authentification en cours...";
-                
-                // Authentifier après l'initialisation
-                authentifier();
-            } catch (e) {
-                statusDiv.innerText = "❌ Erreur lors de l'initialisation du SDK";
-                statusDiv.className = 'error';
-                console.error("Erreur d'initialisation :", e);
-            }
+    // Étape 2: Ajoutez un événement au bouton pour effectuer une transaction
+    const payButton = document.getElementById("payButton");
+    payButton.addEventListener("click", function() {
+      // Logique du paiement
+      Pi.createPayment({
+        // Configuration du paiement
+        amount: 1, // Montant à payer (1 Pi dans ce cas)
+        memo: "Test de transaction", // Description/mémo de la transaction
+        metadata: { 
+          orderId: "12345" // Exemple: identifiant de commande
         }
-
-        // Authentification de l'utilisateur
-        async function authentifier() {
-            try {
-                const scopes = ['payments'];
-                const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                
-                statusDiv.innerText = `✅ Connecté : ${user.user.username}`;
-                statusDiv.className = 'success';
-                btnPayer.disabled = false;
-                console.log("Utilisateur authentifié :", user);
-            } catch (err) {
-                statusDiv.innerText = `❌ Erreur d'authentification : ${err.message}`;
-                statusDiv.className = 'error';
-                console.error("Erreur d'authentification :", err);
-            }
-        }
-
-        // Callback pour les paiements incomplets
-        function onIncompletePaymentFound(payment) {
-            console.log("Paiement incomplet détecté :", payment);
-            statusDiv.innerText = "⚠️ Paiement incomplet trouvé";
-        }
-
-        // Logique de paiement
-        function lancerPaiement() {
-            try {
-                btnPayer.disabled = true;
-                statusDiv.innerText = "💳 Demande de paiement en cours...";
-
-                Pi.createPayment({
-                    amount: 1,
-                    memo: "Test Global Business World",
-                    metadata: { orderId: "test_gbw_001" }
-                }, {
-                    onReadyForServerApproval: (paymentId) => {
-                        statusDiv.innerText = `⏳ En attente d'approbation serveur (ID: ${paymentId})`;
-                        console.log("Payment ID :", paymentId);
-                    },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        statusDiv.innerText = `✅ Paiement réussi ! TXID: ${txid}`;
-                        statusDiv.className = 'success';
-                        btnPayer.disabled = false;
-                    },
-                    onCancel: (paymentId) => { 
-                        statusDiv.innerText = "⛔ Paiement annulé"; 
-                        statusDiv.className = 'error';
-                        btnPayer.disabled = false; 
-                    },
-                    onError: (error, payment) => { 
-                        statusDiv.innerText = `❌ Erreur : ${error.message}`; 
-                        statusDiv.className = 'error';
-                        console.error("Erreur de paiement :", error, payment);
-                        btnPayer.disabled = false; 
-                    }
-                });
-            } catch (err) {
-                statusDiv.innerText = "❌ Erreur fatale lors du paiement";
-                statusDiv.className = 'error';
-                console.error("Erreur :", err);
-                btnPayer.disabled = false;
-            }
-        }
-
-        // Initialiser le SDK au chargement de la page
-        window.addEventListener('load', initializePiSDK);
-        
-        // Initialiser aussi si le SDK est déjà disponible
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializePiSDK);
-        } else {
-            initializePiSDK();
-        }
-    </script>
-
+      })
+      .then(function (payment) {
+        // Réponse en cas de succès
+        console.log("Paiement en attente :", payment);
+        alert("Paiement créé avec succès. En attente de confirmation.");
+      })
+      .catch(function (error) {
+        // Gestion des erreurs
+        console.error("Erreur lors de la création du paiement :", error);
+        alert("Erreur lors de la création du paiement : " + error.message);
+      });
+    });
+  </script>
 </body>
 </html>
-  
