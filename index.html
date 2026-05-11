@@ -1,51 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>GBW - Testnet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GBW - Final Test</title>
+    <!-- CHARGEMENT DU SDK PI (INDISPENSABLE) -->
     <script src="https://minepi.com"></script>
 </head>
-<body style="text-align: center; padding-top: 50px; font-family: Arial;">
-    <h1>GLOBAL-BUSINESS-WORLD</h1>
-    <p>Statut : <span id="status">Chargement du SDK...</span></p>
+<body style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
 
-    <button id="payButton" style="padding: 20px; background: #673ab7; color: white; border: none; border-radius: 10px; font-size: 20px;">
-        PAYER 1 PI (TEST)
+    <h1 style="color: #673ab7;">GLOBAL-BUSINESS-WORLD</h1>
+    
+    <div id="status-box" style="margin: 20px auto; padding: 15px; border-radius: 8px; background: white; border: 1px solid #ddd; max-width: 400px;">
+        <p>Statut : <span id="status" style="font-weight: bold; color: orange;">Initialisation...</span></p>
+    </div>
+
+    <button id="payButton" style="padding: 20px 40px; background-color: #673ab7; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        PAYER 1 PI (TESTNET)
     </button>
 
+    <div id="debug-log" style="margin-top: 30px; text-align: left; font-size: 12px; color: #555; background: #eee; padding: 10px; border-radius: 5px; height: 150px; overflow-y: auto;">
+        Log de test :
+    </div>
+
     <script>
-        const Pi = window.Pi;
-        
-        // Initialisation vitale
-        try {
-            Pi.init({ version: "2.0", sandbox: true });
-            document.getElementById('status').innerText = "SDK Prêt (Testnet)";
-            document.getElementById('status').style.color = "green";
-        } catch (e) {
-            document.getElementById('status').innerText = "Erreur SDK";
+        const statusEl = document.getElementById('status');
+        const logEl = document.getElementById('debug-log');
+
+        function addLog(msg) {
+            logEl.innerHTML += "<br>> " + msg;
+            console.log(msg);
         }
 
+        // 1. Initialisation du SDK
+        try {
+            const Pi = window.Pi;
+            Pi.init({ version: "2.0", sandbox: true });
+            
+            statusEl.innerText = "SDK PRÊT (Testnet)";
+            statusEl.style.color = "green";
+            addLog("SDK Pi chargé avec succès.");
+        } catch (err) {
+            statusEl.innerText = "ERREUR SDK";
+            statusEl.style.color = "red";
+            addLog("Erreur Init: " + err.message);
+        }
+
+        // 2. Gestion du paiement
         document.getElementById('payButton').addEventListener('click', async () => {
+            addLog("Tentative de paiement lancée...");
+            
             try {
                 const payment = await Pi.createPayment({
-                    amount: 1,
-                    memo: "Test Final GBW",
-                    metadata: { order: "10-10" }
+                    amount: 1.0,
+                    memo: "Validation Etape 10 - GBW",
+                    metadata: { orderId: "TEST-10-10" },
                 }, {
-                    onReadyForServerApproval: (id) => {
-                        alert("Paiement créé ! ID: " + id);
-                        // Note : Normalement ici on appelle le backend pour approuver
+                    onReadyForServerApproval: (paymentId) => {
+                        addLog("Paiement créé ! ID: " + paymentId);
+                        addLog("En attente d'approbation...");
+                        // Note: Pour un test de checklist, le SDK ouvre la fenêtre native ici.
                     },
-                    onReadyForServerCompletion: (id, txid) => {
-                        alert("Succès ! Étape 10 validée. TXID: " + txid);
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        addLog("SUCCÈS ! Transaction: " + txid);
+                        statusEl.innerText = "PAIEMENT RÉUSSI !";
+                        alert("Bravo ! Etape 10 validée. TXID: " + txid);
                     },
-                    onCancel: (id) => { console.log("Annulé"); },
-                    onError: (err) => { alert("Erreur Pi : " + err.message); }
+                    onCancel: (paymentId) => {
+                        addLog("Paiement annulé par l'utilisateur.");
+                    },
+                    onError: (error, paymentId) => {
+                        addLog("Erreur durant le paiement: " + error.message);
+                    },
                 });
             } catch (err) {
-                alert("Erreur de clic : " + err.message);
+                addLog("Erreur critique: " + err.message);
+                alert("Vérifiez que vous êtes bien dans le Pi Browser !");
             }
         });
     </script>
 </body>
 </html>
-
