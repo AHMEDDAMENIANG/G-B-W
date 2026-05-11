@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Global Business World - Paiement Pi</title>
     
-    <!-- 1. CHARGEMENT DU SDK PI (CORRIGÉ ICI) -->
+    <!-- Charger le SDK Pi -->
     <script src="https://minepi.com"></script>
 
     <style>
@@ -66,10 +66,10 @@
         const statusDiv = document.getElementById('status');
         const btnPayer = document.getElementById('btn-payer');
 
-        // 2. INITIALISATION SÉCURISÉE
+        // Initialisation du SDK Pi
         try {
             if (window.Pi) {
-                 Pi.init({ version: "2.0", sandbox: false});
+                Pi.init({ version: "2.0", sandbox: true }); // Le mode sandbox est activé pour les tests
                 console.log("Pi SDK est initialisé.");
             } else {
                 statusDiv.innerText = "SDK introuvable. Utilisez le Pi Browser.";
@@ -78,12 +78,11 @@
             statusDiv.innerText = "Erreur d'initialisation.";
         }
 
-        // 3. AUTHENTIFICATION AUTOMATIQUE
+        // Authentification automatique
         async function authentifier() {
             try {
                 const scopes = ['payments'];
                 const user = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                
                 statusDiv.innerText = "Connecté : " + user.user.username;
                 statusDiv.style.color = "#2ecc71";
                 btnPayer.disabled = false; 
@@ -92,17 +91,18 @@
             }
         }
 
+        // Callback pour les paiements incomplets
         function onIncompletePaymentFound(payment) {
             console.log("Paiement incomplet :", payment);
         }
 
-        // 4. LOGIQUE DE PAIEMENT
-        async function lancerPaiement() {
+        // Logique de paiement
+        function lancerPaiement() {
             try {
                 btnPayer.disabled = true;
                 statusDiv.innerText = "Demande de paiement en cours...";
 
-                await Pi.createPayment({
+                Pi.createPayment({
                     amount: 1,
                     memo: "Test GBW",
                     metadata: { orderId: "123" }
@@ -113,9 +113,16 @@
                     },
                     onReadyForServerCompletion: (paymentId, txid) => {
                         statusDiv.innerText = "Réussi ! TXID: " + txid;
+                        btnPayer.disabled = false;
                     },
-                    onCancel: (paymentId) => { statusDiv.innerText = "Annulé."; btnPayer.disabled = false; },
-                    onError: (error) => { statusDiv.innerText = "Erreur : " + error.message; btnPayer.disabled = false; }
+                    onCancel: (paymentId) => { 
+                        statusDiv.innerText = "Annulé."; 
+                        btnPayer.disabled = false; 
+                    },
+                    onError: (error) => { 
+                        statusDiv.innerText = "Erreur : " + error.message; 
+                        btnPayer.disabled = false; 
+                    }
                 });
             } catch (err) {
                 statusDiv.innerText = "Erreur fatale.";
@@ -123,6 +130,7 @@
             }
         }
 
+        // Charger automatiquement et authentifier l'utilisateur
         window.onload = authentifier;
     </script>
 
