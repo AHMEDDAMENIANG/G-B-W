@@ -85,7 +85,8 @@
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ paymentId })
                         })
-                        .then(res => {
+           b
+               .then(res => {
                             if (!res.ok) throw new Error("Réponse serveur incorrecte");
                             return res.json();
                         })
@@ -110,4 +111,3 @@
     </script>
 </body>
 </html>
-
