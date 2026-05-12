@@ -1,5 +1,13 @@
 {
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' minepi.com minepi.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' minepi.com; connect-src 'self' minepi.com /api/;"
+        }
+      ]
+    }
   ]
 }
