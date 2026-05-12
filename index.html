@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GBW - Final Test</title>
-    <!-- CHARGEMENT DU SDK PI (INDISPENSABLE) -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <!-- CHARGEMENT DU SDK PI -->
+    <script src="minepi.com"></script>
 </head>
 <body style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
 
@@ -32,52 +32,82 @@
             console.log(msg);
         }
 
-        // 1. Initialisation du SDK
-        try {
-            const Pi = window.Pi;
-            Pi.init({ version: "2.0", sandbox: true });
-            
-            statusEl.innerText = "SDK PRÊT (Testnet)";
-            statusEl.style.color = "green";
-            addLog("SDK Pi chargé avec succès.");
-        } catch (err) {
-            statusEl.innerText = "ERREUR SDK";
-            statusEl.style.color = "red";
-            addLog("Erreur Init: " + err.message);
+        // 1. Initialisation et Authentification STRICTE
+        async function initPi() {
+            try {
+                if (!window.Pi) {
+                    throw new Error("L'objet window.Pi est introuvable.");
+                }
+                
+                // Initialisation obligatoire
+                window.Pi.init({ version: "1.5", sandbox: true });
+                addLog("SDK Pi initialisé (v1.5).");
+
+                // Demande explicite des deux scopes obligatoires pour les paiements
+                const auth = await window.Pi.authenticate(['username', 'payments'], (payment) => {
+                    addLog("Paiement incomplet détecté : " + payment.identifier);
+                });
+
+                statusEl.innerText = "PRÊT - Connecté : " + auth.user.username;
+                statusEl.style.color = "green";
+                addLog("Authentifié avec succès comme : " + auth.user.username);
+            } catch (err) {
+                statusEl.innerText = "ERREUR";
+                statusEl.style.color = "red";
+                addLog("Erreur Init/Auth: " + err.message);
+            }
         }
 
-        // 2. Gestion du paiement
+        // Lancement immédiat au chargement de la page
+        initPi();
+
+        // 2. Gestion sécurisée du paiement
         document.getElementById('payButton').addEventListener('click', async () => {
             addLog("Tentative de paiement lancée...");
             
             try {
-                const payment = await Pi.createPayment({
+                if (!window.Pi) {
+                    throw new Error("SDK non disponible.");
+                }
+
+                await window.Pi.createPayment({
                     amount: 1.0,
                     memo: "Validation Etape 10 - GBW",
                     metadata: { orderId: "TEST-10-10" },
                 }, {
                     onReadyForServerApproval: (paymentId) => {
                         addLog("Paiement créé ! ID: " + paymentId);
-                        addLog("En attente d'approbation...");
-                        // Note: Pour un test de checklist, le SDK ouvre la fenêtre native ici.
+                        addLog("Envoi au serveur backend (/api/approve)...");
+                        
+                        // Liaison avec votre fichier api/approve.js
+                        fetch('/api/approve', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ paymentId })
+                        })
+                        .then(res => {
+                            if (!res.ok) throw new Error("Réponse serveur incorrecte");
+                            return res.json();
+                        })
+                        .then(() => addLog("Le serveur a approuvé le paiement !"))
+                        .catch(err => addLog("Erreur approbation serveur: " + err.message));
                     },
                     onReadyForServerCompletion: (paymentId, txid) => {
-                        addLog("SUCCÈS ! Transaction: " + txid);
+                        addLog("Paiement soumis à la blockchain ! TXID: " + txid);
                         statusEl.innerText = "PAIEMENT RÉUSSI !";
-                        alert("Bravo ! Etape 10 validée. TXID: " + txid);
                     },
                     onCancel: (paymentId) => {
                         addLog("Paiement annulé par l'utilisateur.");
                     },
                     onError: (error, paymentId) => {
-                        addLog("Erreur durant le paiement: " + error.message);
+                        addLog("Erreur durant la transaction: " + error.message);
                     },
                 });
             } catch (err) {
                 addLog("Erreur critique: " + err.message);
-                alert("Vérifiez que vous êtes bien dans le Pi Browser !");
             }
         });
     </script>
 </body>
 </html>
+
