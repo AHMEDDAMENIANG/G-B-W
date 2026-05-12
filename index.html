@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GBW - Final Test</title>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="minepi.com"></script>
 </head>
 <body style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
 
@@ -25,13 +25,14 @@
     <script>
         const statusEl = document.getElementById('status');
         const logEl = document.getElementById('debug-log');
+        let isSdkReady = false;
 
         function addLog(msg) {
             logEl.innerHTML += "<br>> " + msg;
             console.log(msg);
         }
 
-        // 1. Initialisation et Authentification STRICTE
+        // 1. Initialisation et Authentification ordonnée
         async function initPi() {
             try {
                 if (!window.Pi) {
@@ -40,6 +41,8 @@
                 
                 window.Pi.init({ version: "1.5", sandbox: true });
                 addLog("SDK Pi initialisé (v1.5).");
+                
+                isSdkReady = true;
 
                 const auth = await window.Pi.authenticate(['username', 'payments'], (payment) => {
                     addLog("Paiement incomplet détecté : " + payment.identifier);
@@ -57,15 +60,16 @@
 
         initPi();
 
-        // 2. Gestion sécurisée du paiement
+        // 2. Gestion sécurisée du paiement au clic
         document.getElementById('payButton').addEventListener('click', async () => {
             addLog("Tentative de paiement lancée...");
             
+            if (!isSdkReady) {
+                addLog("Erreur : Le SDK n'a pas fini de s'initialiser. Attendez un instant...");
+                return;
+            }
+            
             try {
-                if (!window.Pi) {
-                    throw new Error("SDK non disponible.");
-                }
-
                 await window.Pi.createPayment({
                     amount: 1.0,
                     memo: "Validation Etape 10 - GBW",
