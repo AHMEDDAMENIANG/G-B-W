@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GBW - Final Test</title>
-    <!-- CHARGEMENT DU SDK PI -->
     <script src="minepi.com"></script>
 </head>
 <body style="font-family: Arial, sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;">
@@ -39,11 +38,9 @@
                     throw new Error("L'objet window.Pi est introuvable.");
                 }
                 
-                // Initialisation obligatoire
                 window.Pi.init({ version: "1.5", sandbox: true });
                 addLog("SDK Pi initialisé (v1.5).");
 
-                // Demande explicite des deux scopes obligatoires pour les paiements
                 const auth = await window.Pi.authenticate(['username', 'payments'], (payment) => {
                     addLog("Paiement incomplet détecté : " + payment.identifier);
                 });
@@ -58,7 +55,6 @@
             }
         }
 
-        // Lancement immédiat au chargement de la page
         initPi();
 
         // 2. Gestion sécurisée du paiement
@@ -79,14 +75,12 @@
                         addLog("Paiement créé ! ID: " + paymentId);
                         addLog("Envoi au serveur backend (/api/approve)...");
                         
-                        // Liaison avec votre fichier api/approve.js
                         fetch('/api/approve', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ paymentId })
                         })
-           b
-               .then(res => {
+                        .then(res => {
                             if (!res.ok) throw new Error("Réponse serveur incorrecte");
                             return res.json();
                         })
