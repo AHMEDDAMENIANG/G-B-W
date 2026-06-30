@@ -33,6 +33,36 @@
     </style>
 </head>
 <body>
+    <!-- Bouton visuel sur lequel l'utilisateur va cliquer -->
+    <div style="text-align: center; margin: 20px;">
+        <button onclick="loginWithPi()" style="background-color: #6200ee; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;">
+            Se connecter avec Pi
+        </button>
+    </div>
+
+    <!-- Code JavaScript pour faire fonctionner la connexion Pi -->
+    <script>
+        // Initialisation obligatoire du SDK Pi
+        Pi.init({ version: "2.0" });
+
+        // Fonction qui déclenche la fenêtre "Pi Sign-In"
+        function loginWithPi() {
+            Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
+                .then(function(auth) {
+                    alert("Connexion réussie ! Bienvenue " + auth.user.username);
+                    // L'utilisateur est connecté, vous pouvez charger son profil ici
+                })
+                .catch(function(error) {
+                    alert("Erreur de connexion : " + error.message);
+                    console.error("Détails de l'erreur :", error);
+                });
+        }
+
+        // Fonction obligatoire exigée par le SDK Pi pour gérer les blocages de paiement
+        function onIncompletePaymentFound(payment) {
+            console.log("Paiement en attente détecté :", payment);
+        }
+    </script>
 
     <!-- 2. Éléments HTML indispensables au script -->
     <div id="status">Initialisation...</div>
