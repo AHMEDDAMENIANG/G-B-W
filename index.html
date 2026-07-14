@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G-B-W - Pi Network</title>
+    <title>GLOBAL BUSINESS WORLD</title>
     
-    <!-- 1. Chargement obligatoire du SDK Pi Network -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,6 +16,7 @@
             font-size: 1.2em;
             font-weight: bold;
             margin-bottom: 15px;
+            text-align: center;
         }
         #debug-log {
             background-color: #1e1e1e;
@@ -33,93 +30,51 @@
     </style>
 </head>
 <body>
-    <!-- Bouton visuel sur lequel l'utilisateur va cliquer -->
-    <div style="text-align: center; margin: 20px;">
-        <button onclick="loginWithPi()" style="background-color: #6200ee; color: white; padding: 12px 24px; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;">
-            Se connecter avec Pi
+
+    <h1 style="text-align: center; margin-top: 40px;">GLOBAL BUSINESS WORLD</h1>
+    <p style="text-align: center; color: #aaaaaa;">Plateforme Commerciale Internationale autonome</p>
+
+    <!-- Bouton d'accès standard pour le web traditionnel -->
+    <div style="text-align: center; margin: 40px 20px;">
+        <button onclick="accederApplication()" style="background-color: #0070f3; color: white; border: none; padding: 14px 28px; font-size: 16px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.2s;">
+            Accéder à la Plateforme Commerciale
         </button>
     </div>
 
-    <!-- Code JavaScript pour faire fonctionner la connexion Pi -->
-    <script>
-        // Initialisation obligatoire du SDK Pi
-        Pi.init({ version: "2.0" });
-
-        // Fonction qui déclenche la fenêtre "Pi Sign-In"
-        function loginWithPi() {
-            Pi.authenticate(['username', 'payments'], onIncompletePaymentFound)
-                .then(function(auth) {
-                    alert("Connexion réussie ! Bienvenue " + auth.user.username);
-                    // L'utilisateur est connecté, vous pouvez charger son profil ici
-                })
-                .catch(function(error) {
-                    alert("Erreur de connexion : " + error.message);
-                    console.error("Détails de l'erreur :", error);
-                });
-        }
-
-        // Fonction obligatoire exigée par le SDK Pi pour gérer les blocages de paiement
-        function onIncompletePaymentFound(payment) {
-            console.log("Paiement en attente détecté :", payment);
-        }
-    </script>
-
-    <!-- 2. Éléments HTML indispensables au script -->
-    <div id="status">Initialisation...</div>
+    <!-- Éléments d'affichage de statut -->
+    <div id="status">Chargement du système...</div>
     <div id="debug-log">Démarrage du système de log...</div>
 
-    <!-- 3. Script JavaScript exécuté au bon moment -->
     <script>
-        // Le code attend que toute la page soit construite
-        document.addEventListener("DOMContentLoaded", () => {
-            
-            const statusEl = document.getElementById('status');
+        // Logique de l'application autonome
+        function accederApplication() {
+            const statusElement = document.getElementById("status");
+            if (statusElement) {
+                statusElement.innerText = "Bienvenue sur Global Business World !";
+                statusElement.style.color = "#00ff00";
+            }
+            addLog("L'utilisateur a accédé à la plateforme hors de Pi Browser.");
+        }
+
+        // Fonction utilitaire pour écrire dans le bloc de log
+        function addLog(msg) {
             const logEl = document.getElementById('debug-log');
-            let isSdkReady = false;
-
-            function addLog(msg) {
-                if (logEl) {
-                    logEl.innerHTML += "<br>>> " + msg;
-                }
-                console.log(msg);
+            if (logEl) {
+                logEl.innerHTML += "<br>>>> " + msg;
             }
+            console.log(msg);
+        }
 
-            async function initPi() {
-                try {
-                    if (!window.Pi) {
-                        throw new Error("L'objet window.Pi est introuvable. Le SDK n'est pas chargé.");
-                    }
-
-                    // Exécution de l'initialisation native
-                    window.Pi.init({ version: "2.0", sandbox: false });
-
-                    addLog("SDK Pi initialisé (v1.5).");
-
-                    // Pause de sécurité pour laisser le SDK s'enregistrer
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    isSdkReady = true;
-
-                    addLog("Authentification en cours...");
-                    
-                    // Appel de l'authentification obligatoire
-                    const auth = await window.Pi.authenticate(['username', 'payments'], (payment) => {
-                        addLog("Paiement incomplet détecté : " + JSON.stringify(payment));
-                    });
-
-                    statusEl.innerText = "PRÊT - Connecté : " + auth.user.username;
-                    statusEl.style.color = "green";
-                    addLog("Authentifié avec succès comme : " + auth.user.username);
-
-                } catch (err) {
-                    statusEl.innerText = "ERREUR";
-                    statusEl.style.color = "red";
-                    addLog("Erreur critique : " + err.message);
-                }
+        // Initialisation automatique au chargement de la page
+        document.addEventListener("DOMContentLoaded", () => {
+            const statusEl = document.getElementById('status');
+            if (statusEl) {
+                statusEl.innerText = "Système Global Business World prêt.";
             }
-
-            // Lancement de la fonction principale
-            initPi();
+            addLog("Application initialisée sur le web traditionnel.");
         });
     </script>
+
 </body>
 </html>
+
