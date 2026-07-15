@@ -4,77 +4,130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GLOBAL BUSINESS WORLD</title>
-    
+    <!-- Chargement de la bibliothèque Supabase -->
+    <script src="https://jsdelivr.net"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #121212;
             color: #ffffff;
+            margin: 0;
             padding: 20px;
         }
-        #status {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 15px;
+        .header {
             text-align: center;
+            padding: 30px 0;
         }
-        #debug-log {
+        h1 {
+            color: #0070f3;
+            margin: 0 0 10px 0;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .catalog {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .product-card {
             background-color: #1e1e1e;
             border: 1px solid #333;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            max-height: 300px;
-            overflow-y: auto;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .product-card h3 {
+            margin: 0 0 10px 0;
+            color: #fff;
+        }
+        .badge {
+            background-color: #333;
+            color: #0070f3;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .price {
+            font-size: 1.2em;
+            color: #00ff00;
+            font-weight: bold;
+            margin: 15px 0 5px 0;
+        }
+        .supplier {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+        .loading {
+            text-align: center;
+            color: #888;
+            font-style: italic;
         }
     </style>
 </head>
 <body>
 
-    <h1 style="text-align: center; margin-top: 40px;">GLOBAL BUSINESS WORLD</h1>
-    <p style="text-align: center; color: #aaaaaa;">Plateforme Commerciale Internationale autonome</p>
+    <div class="container">
+        <div class="header">
+            <h1>GLOBAL BUSINESS WORLD</h1>
+            <p>Plateforme Commerciale Autonome</p>
+        </div>
 
-    <!-- Bouton d'accès standard pour le web traditionnel -->
-    <div style="text-align: center; margin: 40px 20px;">
-        <button onclick="accederApplication()" style="background-color: #0070f3; color: white; border: none; padding: 14px 28px; font-size: 16px; border-radius: 5px; cursor: pointer; font-weight: bold; transition: background-color 0.2s;">
-            Accéder à la Plateforme Commerciale
-        </button>
+        <div id="loading-text" class="loading">Chargement des produits en temps réel...</div>
+        <div id="products-list" class="catalog"></div>
     </div>
 
-    <!-- Éléments d'affichage de statut -->
-    <div id="status">Chargement du système...</div>
-    <div id="debug-log">Démarrage du système de log...</div>
-
     <script>
-        // Logique de l'application autonome
-        function accederApplication() {
-            const statusElement = document.getElementById("status");
-            if (statusElement) {
-                statusElement.innerText = "Bienvenue sur Global Business World !";
-                statusElement.style.color = "#00ff00";
+        // REPLACE_URL et REPLACE_KEY à modifier avec vos clés copiées
+        const SUPABASE_URL = "https://supabase.co"; 
+        const SUPABASE_KEY = "VOTRE_CLE_ANON_PUBLIC_ICI";
+
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function fetchProducts() {
+            const { data, error } = await supabase.from('products').select('*');
+            
+            if (error) {
+                console.error(error);
+                document.getElementById('loading-text').innerText = "Erreur de chargement.";
+                return;
             }
-            addLog("L'utilisateur a accédé à la plateforme hors de Pi Browser.");
+
+            document.getElementById('loading-text').style.display = 'none';
+            const listContainer = document.getElementById('products-list');
+            listContainer.innerHTML = "";
+
+            if(data.length === 0) {
+                listContainer.innerHTML = "<p class='loading'>Aucun produit disponible pour le moment.</p>";
+                return;
+            }
+
+            data.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <span class="badge">${product.category || 'Général'}</span>
+                    <h3>${product.name || 'Produit sans nom'}</h3>
+                    <p class="price">${product.price ? product.price + ' FCFA' : 'Prix sur demande'}</p>
+                    <p class="supplier">Fournisseur : ${product.supplier || 'Inconnu'}</p>
+                `;
+                listContainer.appendChild(card);
+            });
         }
 
-        // Fonction utilitaire pour écrire dans le bloc de log
-        function addLog(msg) {
-            const logEl = document.getElementById('debug-log');
-            if (logEl) {
-                logEl.innerHTML += "<br>>>> " + msg;
-            }
-            console.log(msg);
-        }
+        // Chargement initial
+        fetchProducts();
 
-        // Initialisation automatique au chargement de la page
-        document.addEventListener("DOMContentLoaded", () => {
-            const statusEl = document.getElementById('status');
-            if (statusEl) {
-                statusEl.innerText = "Système Global Business World prêt.";
-            }
-            addLog("Application initialisée sur le web traditionnel.");
-        });
+        // Écoute en temps réel des nouveaux produits ajoutés sur Supabase
+        supabase.channel('custom-all-channel')
+        .on('postgres_changes', { event: '*', pattern: 'public', table: 'products' }, () => {
+            fetchProducts();
+        })
+        .subscribe();
     </script>
-
 </body>
 </html>
 
