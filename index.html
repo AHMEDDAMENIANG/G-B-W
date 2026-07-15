@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GLOBAL BUSINESS WORLD</title>
-    <!-- Connexion à la bibliothèque Supabase -->
+    <!-- CORRECTION : Lien complet vers la bibliothèque Supabase -->
     <script src="https://jsdelivr.net"></script>
     <style>
         body {
@@ -46,7 +46,7 @@
             border-radius: 12px;
             padding: 20px;
             display: flex;
-            flex-direction: column;
+            flex-direction: flex-column;
             justify-content: space-between;
         }
         .badge {
@@ -108,39 +108,46 @@
         // Il vous reste juste à coller votre clé "anon" entre les guillemets ci-dessous
         const SUPABASE_KEY = "VOTRE_CLE_ANON_PUBLIC_ICI"; 
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // CORRECTION : Utilisation de la majuscule "Supabase" pour créer le client
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function loadProducts() {
             const container = document.getElementById('catalog-container');
-            const { data, error } = await supabase.from('products').select('*');
+            try {
+                const { data, error } = await supabase.from('products').select('*');
 
-            if (error) {
-                document.getElementById('status-message').innerText = "Erreur de connexion.";
-                return;
+                if (error) {
+                    document.getElementById('status-message').innerText = "Erreur de connexion aux données.";
+                    console.error(error);
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                if (!data || data.length === 0) {
+                    container.innerHTML = "<div class='loading'>Aucun article disponible pour le moment.</div>";
+                    return;
+                }
+
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.innerHTML = `
+                        <div>
+                            <span class="badge">${item.category || 'Général'}</span>
+                            <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
+                        </div>
+                        <div>
+                            <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
+                            <p class="supplier">Magasin : ${item.supplier || 'Partenaire GBW'}</p>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                document.getElementById('status-message').innerText = "Erreur critique de chargement.";
+                console.error(err);
             }
-
-            container.innerHTML = "";
-
-            if (!data || data.length === 0) {
-                container.innerHTML = "<div class='loading'>Aucun article disponible pour le moment.</div>";
-                return;
-            }
-
-            data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <div>
-                        <span class="badge">${item.category || 'Général'}</span>
-                        <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
-                    </div>
-                    <div>
-                        <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
-                        <p class="supplier">Magasin : ${item.supplier || 'Partenaire GBW'}</p>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
         }
 
         loadProducts();
