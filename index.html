@@ -1,19 +1,21 @@
+
 <script src="https://jsdelivr.net"></script>
 <script>
-    // Configuration automatique de votre adresse Supabase
+    // Configuration de votre adresse Supabase GLOBAL BUSINESS WORLD
     const SUPABASE_URL = "https://supabase.co"; 
     const SUPABASE_KEY = "sb_publishable_75_PjC_NLzdxaLfuiU-0g_hSmidt-J";
 
-    // Initialisation correcte du client
+    // Initialisation du client Supabase
     const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function loadProducts() {
         const container = document.getElementById('catalog-container');
         try {
+            // Récupération de tous les articles de GLOBAL BUSINESS WORLD
             const { data, error } = await supabase.from('products').select('*');
 
             if (error) {
-                document.getElementById('status-message').innerText = "Erreur de connexion aux données.";
+                document.getElementById('status-message').innerText = "Erreur de connexion aux données de GLOBAL BUSINESS WORLD.";
                 console.error(error);
                 return;
             }
@@ -28,14 +30,23 @@
             data.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'product-card';
+                
+                // Gestion d'une image par défaut si aucune photo n'est enregistrée dans Supabase
+                const defaultImage = "https://unsplash.com";
+                const itemImage = item.image_url || defaultImage;
+
                 card.innerHTML = `
-                    <div>
-                        <span class="badge">${item.category || 'Général'}</span>
-                        <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
+                    <div class="product-image-container">
+                        <img src="${itemImage}" alt="${item.name}" class="product-img" style="width:100%; height:180px; object-fit:cover; border-radius:8px;">
                     </div>
-                    <div>
-                        <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
-                        <p class="supplier">Magasin : ${item.supplier || 'Partenaire GBW'}</p>
+                    <div class="product-info" style="padding: 10px 0;">
+                        <span class="badge" style="background:#007bff; color:white; padding:3px 8px; border-radius:4px; font-size:12px;">${item.category || 'Général'}</span>
+                        <h3 class="product-title" style="margin: 8px 0 5px 0; font-size:16px;">${item.name || 'Article sans nom'}</h3>
+                        <p class="product-desc" style="font-size:13px; color:#666; margin:0 0 10px 0;">${item.description || 'Pas de description disponible.'}</p>
+                    </div>
+                    <div class="product-footer" style="display:flex; justify-content:space-between; align-items:center;">
+                        <p class="price" style="font-weight:bold; color:#28a745; margin:0;">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
+                        <p class="supplier" style="font-size:11px; color:#999; margin:0;">Par : ${item.supplier || 'GBW Partner'}</p>
                     </div>
                 `;
                 container.appendChild(card);
@@ -46,14 +57,13 @@
         }
     }
 
-    // Premier chargement des produits au démarrage
+    // Chargement initial des produits
     loadProducts();
 
-    // Écoute des changements en temps réel (Realtime)
+    // Synchronisation automatique et instantanée en temps réel
     supabase.channel('custom-all-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
             loadProducts();
         })
         .subscribe();
 </script>
-
