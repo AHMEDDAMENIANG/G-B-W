@@ -1,7 +1,7 @@
 <script src="https://jsdelivr.net"></script>
 <script>
     // Configuration automatique de votre adresse Supabase
-    const SUPABASE_URL = "https://supabase.co"; 
+    const SUPABASE_URL = "https://supabase.co"; // Remplacez par votre URL réelle si nécessaire
     const SUPABASE_KEY = "sb_publishable_75_PjC_NLzdxaLfuiU-0g_hSmidt-J";
 
     // Initialisation correcte du client
@@ -38,6 +38,7 @@
                         <p class="supplier">Magasin : ${item.supplier || 'Partenaire GBW'}</p>
                     </div>
                 `;
+            `;
                 container.appendChild(card);
             });
         } catch (err) {
@@ -49,7 +50,7 @@
     // Premier chargement des produits au démarrage
     loadProducts();
 
-    // Écoute des changements en temps réel (Realtime)
+    // Ecoute des changements en temps réel (Realtime)
     supabase.channel('custom-all-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
             loadProducts();
