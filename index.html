@@ -38,7 +38,6 @@
                         <p class="supplier">Magasin : ${item.supplier || 'Partenaire GBW'}</p>
                     </div>
                 `;
-            `;
                 container.appendChild(card);
             });
         } catch (err) {
@@ -50,7 +49,7 @@
     // Premier chargement des produits au démarrage
     loadProducts();
 
-    // Ecoute des changements en temps réel (Realtime)
+    // Écoute des changements en temps réel (Realtime)
     supabase.channel('custom-all-channel')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
             loadProducts();
