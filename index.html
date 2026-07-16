@@ -1,172 +1,59 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLOBAL BUSINESS WORLD</title>
-    <!-- CORRECTION : Lien complet vers la bibliothèque Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://jsdelivr.net"></script>
+<script>
+    // Configuration automatique de votre adresse Supabase
+    const SUPABASE_URL = "https://supabase.co"; // Remplacez par votre URL réelle si nécessaire
+    const SUPABASE_KEY = "sb_publishable_75_PjC_NLzdxaLfuiU-0g_hSmidt-J";
 
+    // Initialisation correcte du client
+    const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    async function loadProducts() {
+        const container = document.getElementById('catalog-container');
+        try {
+            const { data, error } = await supabase.from('products').select('*');
 
-
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
-        .header {
-            text-align: center;
-            padding: 30px 0;
-            border-bottom: 1px solid #333;
-            margin-bottom: 30px;
-        }
-        h1 {
-            color: #0070f3;
-            margin: 0 0 10px 0;
-            font-size: 2.2em;
-            letter-spacing: 1px;
-        }
-        .header p {
-            color: #888;
-            margin: 0;
-            font-size: 1.1em;
-        }
-        .catalog {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-        }
-        .product-card {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 20px;
-            display: flex;
-            flex-direction: flex-column;
-            justify-content: space-between;
-        }
-        .badge {
-            align-self: flex-start;
-            background-color: rgba(0, 112, 243, 0.2);
-            color: #0070f3;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.75em;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-        }
-        .product-title {
-            font-size: 1.2em;
-            font-weight: 600;
-            margin: 0 0 10px 0;
-            color: #ffffff;
-        }
-        .price {
-            font-size: 1.4em;
-            color: #00ff00;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        .supplier {
-            font-size: 0.85em;
-            color: #aaa;
-            margin: 10px 0 0 0;
-            padding-top: 10px;
-            border-top: 1px solid #2a2a2a;
-        }
-        .loading {
-            text-align: center;
-            grid-column: 1 / -1;
-            padding: 40px;
-            color: #888;
-            font-style: italic;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <div class="header">
-            <h1>GLOBAL BUSINESS WORLD</h1>
-            <p>Plateforme Commerciale Internationale Multi-Produits</p>
-        </div>
-
-        <div id="catalog-container" class="catalog">
-            <div id="status-message" class="loading">Connexion à la plateforme commerciale en cours...</div>
-        </div>
-    </div>
-
-    <script>
-        // Configuration automatique de votre adresse Supabase
-        const SUPABASE_URL = "https://supabase.co";
-
-      
-        // Il vous reste juste à coller votre clé "anon" entre les guillemets ci-dessous
-        const SUPABASE_KEY = "sb_publishable__7S_PjC_NLzdxaLfuiU-Og_hSmidt-J"; 
-
-        // CORRECTION : Utilisation de la majuscule "Supabase" pour créer le client
-        // Initialisation correcte du client
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-
-
-
-
-        async function loadProducts() {
-            const container = document.getElementById('catalog-container');
-            try {
-                const { data, error } = await supabase.from('products').select('*'
-
-                if (error) {
-                    document.getElementById('status-message').innerText = "Erreur de connexion aux données.";
-                    console.error(error);
-                    return;
-                }
-
-                container.innerHTML = "";
-
-                if (!data || data.length === 0) {
-                    container.innerHTML = "<div class='loading'>Aucun article disponible pour le moment.</div>";
-                    return;
-                }
-
-                data.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-                    card.innerHTML = `
-                        <div>
-                            <span class="badge">${item.category || 'Général'}</span>
-                            <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
-                        </div>
-                        <div>
-                            <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
-                            <p class="supplier">Magasin : ${item.supplier || 'Partenaire GBW'}</p>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                document.getElementById('status-message').innerText = "Erreur critique de chargement.";
-                console.error(err);
+            if (error) {
+                document.getElementById('status-message').innerText = "Erreur de connexion aux données.";
+                console.error(error);
+                return;
             }
+
+            container.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                container.innerHTML = "<div class='loading'>Aucun article disponible pour le moment.</div>";
+                return;
+            }
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div>
+                        <span class="badge">${item.category || 'Général'}</span>
+                        <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
+                    </div>
+                    <div>
+                        <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
+                        <p class="supplier">Magasin : ${item.supplier || 'Partenaire GBW'}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        } catch (err) {
+            document.getElementById('status-message').innerText = "Erreur critique de chargement.";
+            console.error(err);
         }
+    }
 
-        loadProducts();
+    // Premier chargement des produits au démarrage
+    loadProducts();
 
-        supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-                loadProducts();
-            })
-            .subscribe();
-    </script>
-</body>
-</html>
+    // Écoute des changements en temps réel (Realtime)
+    supabase.channel('custom-all-channel')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+            loadProducts();
+        })
+        .subscribe();
+</script>
+
