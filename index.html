@@ -6,6 +6,8 @@
     <title>GLOBAL BUSINESS WORLD</title>
     <!-- CORRECTION : Lien complet vers la bibliothèque Supabase -->
     <script src="https://jsdelivr.net"></script>
+
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -109,12 +111,17 @@
         const SUPABASE_KEY = "sb_publishable__7S_PjC_NLzdxaLfuiU-Og_hSmidt-J"; 
 
         // CORRECTION : Utilisation de la majuscule "Supabase" pour créer le client
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Initialisation correcte du client
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+
+
 
         async function loadProducts() {
             const container = document.getElementById('catalog-container');
             try {
-                const { data, error } = await supabase.from('products').select('*');
+                const { data, error } = await supabase.from('products').select('*'
 
                 if (error) {
                     document.getElementById('status-message').innerText = "Erreur de connexion aux données.";
