@@ -98,8 +98,7 @@
 
     <header>
         <h1>GLOBAL BUSINESS WORLD</h1>
-                <p class="subtitle">Vêtements • Chaussures • Parfums • Laptops • Smartphones & Accessoires • Montres Smart • Matériel Électrique • Ménage</p>
-
+        <p class="subtitle">Vêtements • Chaussures • Parfums • Laptops • Smartphones & Accessoires • Montres Smart • Matériel Électrique • Ménage</p>
     </header>
 
     <main>
@@ -132,35 +131,34 @@
                     return;
                 }
 
-                            data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                const defaultImage = "https://unsplash.com";
-                const itemImage = item.image_url || defaultImage;
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    const defaultImage = "https://unsplash.com";
+                    const itemImage = item.image_url || defaultImage;
 
-                // Message automatique qui sera envoyé sur votre WhatsApp (remplacez le numéro ci-dessous)
-                const whatsappNumber = "221770000000"; // Mettez votre vrai numéro avec l'indicatif pays
-                const message = encodeURIComponent(`Bonjour GLOBAL BUSINESS WORLD, je suis intéressé(e) par l'article : ${item.name || 'Produit'}`);
-                const whatsappUrl = `https://wa.me{whatsappNumber}?text=${message}`;
+                    // Configuration de votre messagerie WhatsApp GLOBAL BUSINESS WORLD
+                    const whatsappNumber = "221770307574"; 
+                    const message = encodeURIComponent(`Bonjour GLOBAL BUSINESS WORLD, je suis intéressé(e) par l'article : ${item.name || 'Produit'}`);
+                    const whatsappUrl = `https://wa.me{whatsappNumber}?text=${message}`;
 
-                card.innerHTML = `
-                    <div>
-                        <div style="width:100%; height:180px; overflow:hidden; border-radius:8px; margin-bottom:12px; background:#f3f4f6;">
-                            <img src="${itemImage}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;">
+                    card.innerHTML = `
+                        <div>
+                            <div style="width:100%; height:180px; overflow:hidden; border-radius:8px; margin-bottom:12px; background:#f3f4f6;">
+                                <img src="${itemImage}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                            <span class="badge">${item.category || 'Général'}</span>
+                            <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
+                            <p class="product-desc">${item.description || 'Pas de description disponible.'}</p>
                         </div>
-                        <span class="badge">${item.category || 'Général'}</span>
-                        <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
-                        <p class="product-desc">${item.description || 'Pas de description disponible.'}</p>
-                    </div>
-                    <div>
-                        <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
-                        <p class="supplier" style="margin-bottom: 12px;">Magasin : ${item.supplier || 'GBW Partner'}</p>
-                        <a href="${whatsappUrl}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:10px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:14px;">Commander sur WhatsApp</a>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-
+                        <div>
+                            <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
+                            <p class="supplier" style="margin-bottom: 12px;">Magasin : ${item.supplier || 'GBW Partner'}</p>
+                            <a href="${whatsappUrl}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:10px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:14px;">Commander sur WhatsApp</a>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
             } catch (err) {
                 status.innerText = "Erreur réseau critique.";
                 console.error(err);
