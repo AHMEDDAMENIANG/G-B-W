@@ -109,7 +109,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         const SUPABASE_URL = "https://dmmtysjspdoodiikcaho.supabase.co";
-
         const SUPABASE_KEY = "sb_publishable_75_PjC_NLzdxaLfuiU-0g_hSmidt-J";
         const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -137,19 +136,20 @@
                     card.className = 'product-card';
                     const defaultImage = "https://unsplash.com";
                     const itemImage = item.image_url || defaultImage;
+                    const itemName = item.name || item.item_name || 'Article sans nom';
 
                     // Configuration de votre messagerie WhatsApp GLOBAL BUSINESS WORLD
                     const whatsappNumber = "221770307574"; 
-                    const message = encodeURIComponent(`Bonjour GLOBAL BUSINESS WORLD, je suis intéressé(e) par l'article : ${item.name || 'Produit'}`);
+                    const message = encodeURIComponent(`Bonjour GLOBAL BUSINESS WORLD, je suis intéressé(e) par l'article : ${itemName}`);
                     const whatsappUrl = `https://wa.me{whatsappNumber}?text=${message}`;
 
                     card.innerHTML = `
                         <div>
                             <div style="width:100%; height:180px; overflow:hidden; border-radius:8px; margin-bottom:12px; background:#f3f4f6;">
-                                <img src="${itemImage}" alt="${item.name}" style="width:100%; height:100%; object-fit:cover;">
+                                <img src="${itemImage}" alt="${itemName}" style="width:100%; height:100%; object-fit:cover;">
                             </div>
                             <span class="badge">${item.category || 'Général'}</span>
-                            <h3 class="product-title">${item.name || 'Article sans nom'}</h3>
+                            <h3 class="product-title">${itemName}</h3>
                             <p class="product-desc">${item.description || 'Pas de description disponible.'}</p>
                         </div>
                         <div>
