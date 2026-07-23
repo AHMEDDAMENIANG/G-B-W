@@ -1,182 +1,64 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GLOBAL BUSINESS WORLD</title>
-    <style>
-        :root {
-            --primary: #1e3a8a;
-            --success: #10b981;
-            --dark: #1f2937;
-            --light: #f3f4f6;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light);
-            color: var(--dark);
-        }
-        header {
-            background-color: var(--primary);
-            color: white;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-        }
-        h1 { margin: 0; font-size: 24px; letter-spacing: 1px; }
-        .subtitle { margin: 5px 0 0 0; font-size: 14px; opacity: 0.9; }
-        main {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-        #status-message {
-            text-align: center;
-            font-weight: 500;
-            color: #6b7280;
-            margin-bottom: 20px;
-        }
-        #catalog-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-        }
-        .product-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            transition: transform 0.2s;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 15px;
-        }
-        .product-card:hover { transform: translateY(-5px); }
-        .badge {
-            background-color: #dbeafe;
-            color: #1e40af;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-        .product-title {
-            font-size: 16px;
-            margin: 10px 0 5px 0;
-            font-weight: 600;
-        }
-        .product-desc {
-            font-size: 13px;
-            color: #4b5563;
-            margin: 0 0 15px 0;
-            line-height: 1.4;
-        }
-        .price {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--success);
-            margin: 0;
-        }
-        .supplier {
-            font-size: 11px;
-            color: #9ca3af;
-            margin: 3px 0 0 0;
-        }
-        .loading {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 40px;
-            color: #9ca3af;
-        }
-    </style>
-</head>
-<body>
+<!-- Fichier : index.html (Partie basse du document) -->
 
-    <header>
-        <h1>GLOBAL BUSINESS WORLD</h1>
-        <p class="subtitle">Vêtements • Chaussures • Parfums • Laptops • Smartphones & Accessoires • Montres Smart • Matériel Électrique • Ménage</p>
-    </header>
+<!-- Chargement du SDK Supabase officiel -->
+<script src="https://jsdelivr.net"></script>
 
-    <main>
-        <div id="status-message">Connexion au catalogue en cours...</div>
-        <div id="catalog-container"></div>
-    </main>
+<script>
+  // Ajoutez ici vos identifiants récupérés sur votre projet Supabase
+  const SUPABASE_URL = "VOTRE_SUPABASE_URL_ICI";
+  const SUPABASE_ANON_KEY = "VOTRE_SUPABASE_ANON_KEY_ICI";
+  
+  // Votre numéro sénégalais configuré au format WhatsApp
+  const MON_NUMERO_WHATSAPP = "221770307574"; 
 
-    <!-- CORRECTION 1 : Lien officiel et complet vers le script de Supabase -->
-    <script src="https://jsdelivr.net"></script>
-    
-    <script>
-        const SUPABASE_URL = "https://dmmtysjspdoodiikcaho.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_75_PjC_NLzdxaLfuiU-0g_hSmidt-J";
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function chargerProduits() {
+    const conteneur = document.getElementById('catalog-container');
+    const messageStatus = document.getElementById('status-message');
+
+    try {
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*');
+
+      if (error) throw error;
+
+      if (messageStatus) messageStatus.style.display = 'none';
+      conteneur.innerHTML = '';
+
+      products.forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
         
-        // Initialisation correcte via la bibliothèque globale
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // Message personnalisé pré-rempli pour vous faciliter la vente
+        const texteWhatsApp = `Bonjour GLOBAL BUSINESS WORLD, je souhaite commander l'article suivant :\n\n- Produit : ${product.name}\n- Prix : ${product.price} FCFA\n\nMerci de me confirmer la disponibilité pour procéder au paiement sécurisé via Wave ou Orange Money.`;
+        const lienWhatsApp = `https://wa.me{MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
 
-        async function loadProducts() {
-            const container = document.getElementById('catalog-container');
-            const status = document.getElementById('status-message');
-            try {
-                const { data, error } = await supabase.from('products').select('*');
-                if (error) {
-                    status.innerText = "Erreur de chargement du catalogue.";
-                    console.error(error);
-                    return;
-                }
-                
-                status.style.display = "none";
-                container.innerHTML = "";
+        card.innerHTML = `
+          <div style="background-color: #f3f4f6; height: 192px; width: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 16px;">
+            <span style="color: #9ca3af;">Photo du produit</span>
+          </div>
+          <h2 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 8px;">${product.name}</h2>
+          <p style="color: #4b5563; font-size: 0.875rem; margin-bottom: 16px;">${product.description || ''}</p>
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+            <span style="color: #16a34a; font-weight: bold; font-size: 1.125rem; white-space: nowrap;">${product.price} FCFA</span>
+            <a href="${lienWhatsApp}" target="_blank" style="background-color: #25D366; color: white; padding: 10px 14px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              🟢 Commander via WhatsApp
+            </a>
+          </div>
+        `;
+        conteneur.appendChild(card);
+      });
 
-                if (!data || data.length === 0) {
-                    container.innerHTML = "<div class='loading'>Aucun article disponible pour le moment.</div>";
-                    return;
-                }
+    } catch (err) {
+      console.error(err);
+      if (messageStatus) {
+        messageStatus.innerText = "Erreur lors du chargement des produits.";
+        messageStatus.style.color = "#ef4444";
+      }
+    }
+  }
 
-                data.forEach(item => {
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-                    
-                    const defaultImage = "https://unsplash.com";
-                    const itemImage = item.image_url || defaultImage;
-                    const itemName = item.name || item.item_name || 'Article sans nom';
-
-                    const whatsappNumber = "221770307574"; 
-                    const message = encodeURIComponent(`Bonjour GLOBAL BUSINESS WORLD, je suis intéressé(e) par l'article : ${itemName}`);
-                    
-                    // CORRECTION 2 : Syntaxe du lien WhatsApp corrigée avec le / et le $
-                    const whatsappUrl = `https://wa.me{whatsappNumber}?text=${message}`;
-
-                    card.innerHTML = `
-                        <div>
-                            <div style="width:100%; height:180px; overflow:hidden; border-radius:8px; margin-bottom:12px; background:#f3f4f6;">
-                                <img src="${itemImage}" alt="${itemName}" style="width:100%; height:100%; object-fit:cover;">
-                            </div>
-                            <span class="badge">${item.category || 'Général'}</span>
-                            <h3 class="product-title">${itemName}</h3>
-                            <p class="product-desc">${item.description || 'Pas de description disponible.'}</p>
-                        </div>
-                        <div>
-                            <p class="price">${item.price ? item.price + ' FCFA' : 'Prix sur demande'}</p>
-                            <p class="supplier" style="margin-bottom: 12px;">Magasin : ${item.supplier || 'GBW Partner'}</p>
-                            <a href="${whatsappUrl}" target="_blank" style="display:block; text-align:center; background:#25d366; color:white; padding:10px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:14px;">Commander sur WhatsApp</a>
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                status.innerText = "Erreur réseau critique.";
-                console.error(err);
-            }
-        }
-
-        loadProducts();
-
-        supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => { loadProducts(); })
-            .subscribe();
-    </script>
-</body>
-</html>
+  document.addEventListener('DOMContentLoaded', chargerProduits);
+</script>
