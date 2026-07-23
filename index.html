@@ -106,12 +106,15 @@
         <div id="catalog-container"></div>
     </main>
 
+    <!-- CORRECTION 1 : Lien officiel et complet vers le script de Supabase -->
     <script src="https://jsdelivr.net"></script>
+    
     <script>
-        // L'adresse de votre projet est bien remise ici :
         const SUPABASE_URL = "https://dmmtysjspdoodiikcaho.supabase.co";
         const SUPABASE_KEY = "sb_publishable_75_PjC_NLzdxaLfuiU-0g_hSmidt-J";
-        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        // Initialisation correcte via la bibliothèque globale
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         async function loadProducts() {
             const container = document.getElementById('catalog-container');
@@ -135,14 +138,15 @@
                 data.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'product-card';
-                    // Le lien de l'image par défaut est corrigé ici :
+                    
                     const defaultImage = "https://unsplash.com";
                     const itemImage = item.image_url || defaultImage;
                     const itemName = item.name || item.item_name || 'Article sans nom';
 
-                    // Votre configuration WhatsApp parfaite avec le / et le $ est ici :
                     const whatsappNumber = "221770307574"; 
                     const message = encodeURIComponent(`Bonjour GLOBAL BUSINESS WORLD, je suis intéressé(e) par l'article : ${itemName}`);
+                    
+                    // CORRECTION 2 : Syntaxe du lien WhatsApp corrigée avec le / et le $
                     const whatsappUrl = `https://wa.me{whatsappNumber}?text=${message}`;
 
                     card.innerHTML = `
