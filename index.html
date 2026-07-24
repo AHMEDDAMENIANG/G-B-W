@@ -1,9 +1,9 @@
 <!-- Chargement correct du SDK Supabase officiel -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://jsdelivr.net"></script>
 
 <script>
   // Vos identifiants Supabase configurés correctement
-  const SUPABASE_URL = "https://dmmtysjspdoodiikcaho.supabase.co";
+  const SUPABASE_URL = "https://supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable__7S_PjC_NLzdxaLfuiU-Og_hSmidt-J";
   
   // Votre numéro sénégalais configuré au format WhatsApp
@@ -33,7 +33,7 @@
         const texteWhatsApp = `Bonjour GLOBAL BUSINESS WORLD, je souhaite commander l'article suivant :\n\n- Produit : ${product.name}\n- Prix : ${product.price} FCFA\n\nMerci de me confirmer la disponibilité pour procéder au paiement sécurisé via Wave ou Orange Money.`;
         
         // LIEN CORRIGÉ : Syntaxe JavaScript exacte pour WhatsApp
-        const lienWhatsApp = `https://wa.me/${MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
+        const lienWhatsApp = `https://wa.me{MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
 
         card.innerHTML = `
           <div style="background-color: #f3f4f6; height: 192px; width: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 16px;">
