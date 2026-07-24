@@ -33,7 +33,7 @@
         const texteWhatsApp = `Bonjour GLOBAL BUSINESS WORLD, je souhaite commander l'article suivant :\n\n- Produit : ${product.name}\n- Prix : ${product.price} FCFA\n\nMerci de me confirmer la disponibilité pour procéder au paiement sécurisé via Wave ou Orange Money.`;
         
         // LIEN CORRIGÉ : Syntaxe JavaScript exacte pour WhatsApp
-        const lienWhatsApp = `https://wa.me{MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
+        const lienWhatsApp = `https://wa.me/${MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
 
         card.innerHTML = `
           <div style="background-color: #f3f4f6; height: 192px; width: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 16px;">
