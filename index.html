@@ -1,22 +1,23 @@
-<!-- Chargement correct du SDK Supabase officiel -->
+<!-- Chargement du SDK Supabase officiel via CDN -->
 <script src="https://jsdelivr.net"></script>
 
 <script>
-  // Vos identifiants Supabase configurés correctement
-  const SUPABASE_URL = "https://supabase.co";
+  // Configuration de vos accès Supabase
+  const SUPABASE_URL = "https://supabase.co"; 
   const SUPABASE_ANON_KEY = "sb_publishable__7S_PjC_NLzdxaLfuiU-Og_hSmidt-J";
   
-  // Votre numéro sénégalais configuré au format WhatsApp
+  // Votre numéro sénégalais au format WhatsApp
   const MON_NUMERO_WHATSAPP = "221770307574"; 
 
-  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // Initialisation correcte du client Supabase
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   async function chargerProduits() {
     const conteneur = document.getElementById('catalog-container');
     const messageStatus = document.getElementById('status-message');
 
     try {
-      const { data: products, error } = await supabase
+      const { data: products, error } = await supabaseClient
         .from('products')
         .select('*');
 
@@ -29,10 +30,10 @@
         const card = document.createElement('div');
         card.className = 'product-card';
         
-        // Message personnalisé pré-rempli pour vous faciliter la vente
+        // Message personnalisé pré-rempli pour WhatsApp
         const texteWhatsApp = `Bonjour GLOBAL BUSINESS WORLD, je souhaite commander l'article suivant :\n\n- Produit : ${product.name}\n- Prix : ${product.price} FCFA\n\nMerci de me confirmer la disponibilité pour procéder au paiement sécurisé via Wave ou Orange Money.`;
         
-        // LIEN CORRIGÉ : Syntaxe JavaScript exacte pour WhatsApp
+        // Syntaxe JavaScript corrigée avec ${} et le slash / après wa.me
         const lienWhatsApp = `https://wa.me{MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
 
         card.innerHTML = `
