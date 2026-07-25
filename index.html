@@ -1,83 +1,121 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>GLOBAL BUSINESS WORLD — Produits</title>
 
-<script>
-  // --- CONFIGUREZ ICI ---
-  const SUPABASE_URL = "https://dmmtysjspdoodiikcaho.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable__7S_PjC_NLzdxaLfuiU-Og_hSmidt-J";
-  const MON_NUMERO_WHATSAPP = "221770307574"; // sans '+'
-  // -----------------------
+  <style>
+    :root{ --max-width:1100px; --gap:16px; --accent:#0b7285; --card-bg:#fff; --muted:#6b7280; }
+    body{ font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial; background:#f6f8fa; color:#111827; margin:0; padding:20px; display:flex; justify-content:center; }
+    .container{ width:100%; max-width:var(--max-width); margin:0 auto; }
+    .site-header{ text-align:center; margin-bottom:18px; }
+    .site-header h1{ margin:0; color:var(--accent); }
+    .status{ margin-bottom:8px; color:var(--muted); text-align:center; }
+    .product-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:var(--gap); margin-top:16px; }
+    .product-card{ background:var(--card-bg); border:1px solid #e6e6e6; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 1px 3px rgba(0,0,0,0.04); padding:12px; }
+    .card-media{ background:#f3f4f6; height:192px; display:flex; align-items:center; justify-content:center; border-radius:8px; margin-bottom:12px; }
+    .card-media img{ max-width:100%; max-height:100%; object-fit:contain; display:block; }
+    .card-title{ margin:0; font-size:1.05rem; font-weight:600; }
+    .card-desc{ margin:0; color:var(--muted); font-size:0.95rem; min-height:40px; margin-top:8px; }
+    .card-footer{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px; }
+    .card-price{ color:#0a7d3b; font-weight:700; }
+    .card-cta{ background:#25D366; color:white; text-decoration:none; padding:8px 12px; border-radius:6px; }
+    footer{ text-align:center; margin-top:18px; color:var(--muted); font-size:0.9rem; }
+    @media (max-width:640px){ .card-media{ height:160px; } }
+  </style>
 
-  // Initialisation du client Supabase
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  <!-- Supabase JS (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+</head>
+<body>
+  <div class="container">
+    <header class="site-header">
+      <h1>GLOBAL BUSINESS WORLD</h1>
+      <p style="margin:6px 0 0;color:var(--muted)">Catalogue des produits</p>
+    </header>
 
-  // Formatage du prix (ex: 480000 -> "480 000")
-  function formatPrice(n) {
-    if (n == null || n === "") return "";
-    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  }
+    <div id="status-message" class="status">Chargement des produits…</div>
+    <main id="catalog-container" class="product-grid" aria-live="polite"></main>
 
-  async function chargerProduits() {
-    const conteneur = document.getElementById('catalog-container');
-    const messageStatus = document.getElementById('status-message');
+    <footer>
+      <small>Pour commander, cliquez sur "Commander via WhatsApp".</small>
+    </footer>
+  </div>
 
-    try {
-      const { data: products, error } = await supabaseClient
-        .from('products')
-        .select('*')
-        .order('created_at', { ascending: false });
+  <!-- Script principal -->
+  <script>
+    // --- CONFIGUREZ ICI (ne mettez jamais la service_role key côté client) ---
+    const SUPABASE_URL = "https://dmmtysjspdoodiikcaho.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable__7S_PjC_NLzdxaLfuiU-Og_hSmidt-J";
+    const MON_NUMERO_WHATSAPP = "221770307574"; // sans '+'
+    // -----------------------------------------------------------------------
 
-      if (error) throw error;
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      if (messageStatus) messageStatus.style.display = 'none';
-      conteneur.innerHTML = '';
+    function formatPrice(n) {
+      if (n == null || n === "") return "";
+      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    }
 
-      if (!products || products.length === 0) {
-        conteneur.innerHTML = '<p>Aucun produit disponible pour le moment.</p>';
-        return;
-      }
+    async function chargerProduits() {
+      const conteneur = document.getElementById('catalog-container');
+      const messageStatus = document.getElementById('status-message');
 
-      products.forEach(product => {
-        const card = document.createElement('div');
-        card.className = 'product-card';
+      try {
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-        // Utiliser la colonne price ou selling_price si l'une existe
-        const priceValue = product.price ?? product.selling_price ?? '';
-        const priceText = priceValue ? `${formatPrice(priceValue)} FCFA` : '';
+        if (error) throw error;
 
-        // Message personnalisé pré-rempli pour WhatsApp
-        const texteWhatsApp = `Bonjour GLOBAL BUSINESS WORLD, je souhaite commander l'article suivant :\n\n- Produit : ${product.name || ''}\n- Prix : ${priceValue ? priceText : '—'}\n\nMerci de me confirmer la disponibilité.`;
-        // Lien wa.me correct (slash / et interpolation)
-        const lienWhatsApp = `https://wa.me/${MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
+        if (messageStatus) messageStatus.style.display = 'none';
+        conteneur.innerHTML = '';
 
-        // Image (fallback si absent)
-        const imageSrc = (product.image_url && product.image_url.trim() !== '') ? product.image_url : 'https://via.placeholder.com/400x300?text=No+Image';
+        if (!products || products.length === 0) {
+          conteneur.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:var(--muted);">Aucun produit disponible pour le moment.</p>';
+          return;
+        }
 
-        card.innerHTML = `
-          <div style="background-color: #f3f4f6; height: 192px; width: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 12px;">
-            <img src="${imageSrc}" alt="${product.name || 'Produit'}" style="max-height:100%; max-width:100%; object-fit:contain;">
-          </div>
-          <h2 style="font-size: 1.15rem; font-weight: 600; margin:6px 0;">${product.name || ''}</h2>
-          <p style="color: #4b5563; font-size: 0.9rem; margin:8px 0 12px;">${product.description || ''}</p>
-          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-            <span style="color: #16a34a; font-weight: bold; font-size: 1.05rem; white-space: nowrap;">${priceText}</span>
-            <a href="${lienWhatsApp}" target="_blank" rel="noopener noreferrer" style="background-color: #25D366; color: white; padding: 10px 14px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 0.85rem; display: inline-flex; align-items: center; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              🟢 Commander via WhatsApp
-            </a>
-          </div>
-        `;
+        products.forEach(product => {
+          const card = document.createElement('article');
+          card.className = 'product-card';
 
-        conteneur.appendChild(card);
-      });
+          const priceValue = product.price ?? product.selling_price ?? '';
+          const priceText = priceValue ? `${formatPrice(priceValue)} FCFA` : '—';
 
-    } catch (err) {
-      console.error(err);
-      if (messageStatus) {
-        messageStatus.innerText = "Erreur lors du chargement des produits.";
-        messageStatus.style.color = "#ef4444";
-        messageStatus.style.display = '';
+          const texteWhatsApp = `Bonjour GLOBAL BUSINESS WORLD, je souhaite commander l'article suivant :\n\n- Produit : ${product.name || ''}\n- Prix : ${priceValue ? formatPrice(priceValue) + ' FCFA' : '—'}\n\nMerci de me confirmer la disponibilité.`;
+          const lienWhatsApp = `https://wa.me/${MON_NUMERO_WHATSAPP}?text=${encodeURIComponent(texteWhatsApp)}`;
+
+          const imageSrc = (product.image_url && product.image_url.trim() !== '') ? product.image_url : 'https://via.placeholder.com/400x300?text=No+Image';
+
+          card.innerHTML = `
+            <div class="card-media">
+              <img src="${imageSrc}" alt="${(product.name || 'Produit')}" loading="lazy">
+            </div>
+            <h2 class="card-title">${product.name || ''}</h2>
+            <p class="card-desc">${product.description || ''}</p>
+            <div class="card-footer">
+              <span class="card-price">${priceText}</span>
+              <a class="card-cta" href="${lienWhatsApp}" target="_blank" rel="noopener noreferrer">🟢 Commander via WhatsApp</a>
+            </div>
+          `;
+
+          conteneur.appendChild(card);
+        });
+
+      } catch (err) {
+        console.error('Erreur Supabase:', err);
+        if (messageStatus) {
+          messageStatus.innerText = 'Erreur lors du chargement des produits. Voir la console.';
+          messageStatus.style.color = '#ef4444';
+          messageStatus.style.display = '';
+        }
       }
     }
-  }
 
-  document.addEventListener('DOMContentLoaded', chargerProduits);
-                                </script>
+    document.addEventListener('DOMContentLoaded', chargerProduits);
+  </script>
+</body>
+</html>
