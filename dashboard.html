@@ -13,16 +13,24 @@
     <nav>
         <a href="index.html">Accueil</a>
         <a href="products.html">Produits</a>
-        <!-- L'événement appelle la fonction déconnexion qui sera dans auth.js -->
         <a href="#" onclick="logout(event)">Déconnexion</a>
     </nav>
 
     <div class="container">
         <h1>Bienvenue sur votre tableau de bord</h1>
         
+        <!-- Informations générales du compte -->
         <div class="card">
             <h2>Informations du compte</h2>
             <p><strong>Email : </strong><span id="userEmail">Chargement...</span></p>
+            <p><strong>Type de compte : </strong><span id="userRole">Chargement...</span></p>
+        </div>
+
+        <!-- Section réservée exclusivement aux Fournisseurs (masquée par défaut) -->
+        <div id="supplierSection" class="card" style="display: none; margin-top: 20px; border-top: 4px solid #4CAF50;">
+            <h2>Espace Fournisseur</h2>
+            <p>Gérez vos articles en vente sur la plateforme :</p>
+            <a href="add-product.html" class="btn" style="display: inline-block; padding: 10px 15px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">➕ Ajouter un produit</a>
         </div>
     </div>
 
@@ -31,19 +39,27 @@
     <script src="auth.js"></script>
     
     <script>
-        // Vérification de la session au chargement de la page
+        // Vérification de la session et personnalisation de l'affichage
         async function checkUser() {
-            // Utilisation de la méthode recommandée getUser() pour des raisons de sécurité
             const { data: { user }, error } = await supabase.auth.getUser();
 
             if (error || !user) {
-                // Si aucun utilisateur n'est connecté, redirection vers la page de connexion
                 window.location.href = "login.html";
                 return;
             }
 
-            // Si l'utilisateur existe, on affiche son email
+            // 1. Afficher l'adresse email
             document.getElementById("userEmail").textContent = user.email;
+
+            // 2. Récupérer le rôle dans les métadonnées de Supabase Auth
+            const role = user.user_metadata?.role;
+
+            if (role === "supplier") {
+                document.getElementById("userRole").textContent = "Fournisseur / Vendeur";
+                document.getElementById("supplierSection").style.display = "block"; // Affiche l'espace vendeur
+            } else {
+                document.getElementById("userRole").textContent = "Acheteur / Client";
+            }
         }
 
         checkUser();
