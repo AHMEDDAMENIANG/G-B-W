@@ -1,1 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Global Business World</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Inclusion du SDK Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html">Accueil</a>
+        <a href="products.html">Produits</a>
+        <!-- L'événement appelle la fonction déconnexion qui sera dans auth.js -->
+        <a href="#" onclick="logout(event)">Déconnexion</a>
+    </nav>
+
+    <div class="container">
+        <h1>Bienvenue sur votre tableau de bord</h1>
+        
+        <div class="card">
+            <h2>Informations du compte</h2>
+            <p><strong>Email : </strong><span id="userEmail">Chargement...</span></p>
+        </div>
+    </div>
+
+    <!-- Scripts de configuration et de logique -->
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
+    
+    <script>
+        // Vérification de la session au chargement de la page
+        async function checkUser() {
+            // Utilisation de la méthode recommandée getUser() pour des raisons de sécurité
+            const { data: { user }, error } = await supabase.auth.getUser();
+
+            if (error || !user) {
+                // Si aucun utilisateur n'est connecté, redirection vers la page de connexion
+                window.location.href = "login.html";
+                return;
+            }
+
+            // Si l'utilisateur existe, on affiche son email
+            document.getElementById("userEmail").textContent = user.email;
+        }
+
+        checkUser();
+    </script>
+</body>
+</html>
 
