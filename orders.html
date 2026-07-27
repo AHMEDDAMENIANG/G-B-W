@@ -1,1 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Commandes - Global Business World</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .order-card {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status-en-attente { background: #ffeb3b; color: #000; }
+        .status-livree { background: #4caf50; color: #fff; }
+        .items-list {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="dashboard.html">⬅️ Retour au Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <h1>Suivi des commandes clients</h1>
+        
+        <div id="loadingMessage">Chargement des commandes...</div>
+        <div id="ordersList"></div>
+    </div>
+
+    <!-- Scripts et SDK obligatoires -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+
+    <script>
+        async function loadOrders() {
+            // Récupération de toutes les commandes enregistrées dans Supabase
+            const { data: orders, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            const loadingMessage = document.getElementById("loadingMessage");
+            const ordersList = document.getElementById("ordersList");
+
+            if (error) {
+                loadingMessage.textContent = "Erreur de chargement : " + error.message;
+                return;
+            }
+
+            if (!orders || orders.length === 0) {
+                loadingMessage.textContent = "Aucune commande reçue pour le moment.";
+                return;
+            }
+
+            loadingMessage.style.display = "none";
+            ordersList.innerHTML = "";
+
+            orders.forEach(order => {
+                const card = document.createElement("div");
+                card.className = "order-card";
+
+                // Extraction des articles commandés enregistrés au format JSON
+                let itemsHTML = "";
+                if (order.items && Array.isArray(order.items)) {
+                    order.items.forEach(item => {
+                        itemsHTML += `<li>${item.name} (x${item.quantity}) - ${item.price} FCFA</li>`;
+                    });
+                }
+
+                // Détermination de la classe CSS pour le badge de statut
+                const statusClass = order.status === 'Livrée' ? 'status-livree' : 'status-en-attente';
+
+                card.innerHTML = `
+                    <div class="order-header">
+                        <span><strong>Commande #${order.id}</strong></span>
+                        <span class="status-badge ${statusClass}">${order.status}</span>
+                    </div>
+                    <p><strong>Client :</strong> ${order.client_name}</p>
+                    <p><strong>Téléphone :</strong> ${order.client_phone}</p>
+                    <p><strong>Adresse de livraison :</strong> ${order.delivery_address}</p>
+                    
+                    <div class="items-list">
+                        <strong>Articles commandés :</strong>
+                        <ul>${itemsHTML}</ul>
+                    </div>
+                    
+                    <p><strong>Montant Total :</strong> <span style="color:#4CAF50; font-weight:bold;">${order.total_price} FCFA</span></p>
+                    
+                    ${order.status !== 'Livrée' ? `
+                        <button class="btn" style="background:#4caf50; color:#fff; margin-top:10px;" onclick="markAsDelivered(${order.id})">
+                            Mark as delivered / Livrée
+                        </button>
+                    ` : ''}
+                `;
+                ordersList.appendChild(card);
+            });
+        }
+
+        // Fonction pour changer le statut de la commande en "Livrée"
+        async function markAsDelivered(orderId) {
+            const { error } = await supabase
+                .from('orders')
+                .update({ status: 'Livrée' })
+                .eq('id', orderId);
+
+            if (error) {
+                alert("Erreur lors de la mise à jour : " + error.message);
+            } else {
+                alert("Commande mise à jour avec succès !");
+                loadOrders(); // Recharge la liste
+            }
+        }
+
+        // Lancement au chargement de la page
+        loadOrders();
+    </script>
+</body>
+</html>
 
