@@ -39,6 +39,7 @@
     <nav>
         <a href="index.html">Accueil</a>
         <a href="dashboard.html">Mon Tableau de bord</a>
+        <a href="cart.html">🛒 Mon Panier</a>
     </nav>
 
     <div class="container">
@@ -52,7 +53,7 @@
     </div>
 
     <!-- SDK et scripts de configuration -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://jsdelivr.net"></script>
     <script src="supabase.js"></script>
     
     <script>
@@ -75,27 +76,43 @@
                 return;
             }
 
-            // Masquer le message de chargement
             loadingMessage.style.display = "none";
 
-            // Générer le HTML pour chaque produit de la base de données
+            // Générer le HTML pour chaque produit
             products.forEach(product => {
                 const productCard = document.createElement("div");
                 productCard.className = "product-card";
                 
-                // Utiliser une image par défaut si le produit n'en a pas
                 const imageUrl = product.image_url || 'https://placeholder.com';
+                // Utilise le prix de vente ou le prix de base de votre table
+                const displayPrice = product.selling_price || product.price;
 
                 productCard.innerHTML = `
                     <img src="${imageUrl}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <p>${product.description || 'Aucune description disponible.'}</p>
-                    <div class="product-price">${product.price} FCFA</div>
-                    <button class="btn" onclick="alert('Fonctionnalité d\'ajout au panier bientôt disponible !')">Acheter</button>
+                    <div class="product-price">${displayPrice} FCFA</div>
+                    <!-- Le bouton appelle maintenant la fonction de stockage panier -->
+                    <button class="btn" onclick="addToCart('${product.id}', '${product.name.replace(/'/g, "\\'")}', ${displayPrice})">Ajouter au panier</button>
                 `;
                 
                 productsGrid.appendChild(productCard);
             });
+        }
+
+        // FONCTION PANIER : Mémorise l'article localement sur le navigateur
+        function addToCart(id, name, price) {
+            let cart = JSON.parse(localStorage.getItem('gbw_cart')) || [];
+            const existingItem = cart.find(item => item.id === id);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id: id, name: name, price: price, quantity: 1 });
+            }
+            
+            localStorage.setItem('gbw_cart', JSON.stringify(cart));
+            alert(`${name} a été ajouté à votre panier ! 🛒`);
         }
 
         // Lancer le chargement au démarrage de la page
