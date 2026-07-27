@@ -1,1 +1,137 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Panier - Global Business World</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .cart-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .cart-table th, .cart-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        .cart-table th {
+            background-color: #f4f4f4;
+        }
+        .total-section {
+            text-align: right;
+            margin-top: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+        }
+        .cart-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html">Accueil</a>
+        <a href="products.html">🛍️ Continuer les achats</a>
+    </nav>
+
+    <div class="container">
+        <h1>Votre Panier</h1>
+
+        <div id="cartContent">
+            <!-- Tableau dynamique des produits -->
+            <table class="cart-table">
+                <thead>
+                    <tr>
+                        <th>Produit</th>
+                        <th>Prix Unitaire</th>
+                        <th>Quantité</th>
+                        <th>Total</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="cartItems">
+                    <!-- Les lignes seront insérées dynamiquement ici -->
+                </tbody>
+            </table>
+
+            <div class="total-section">
+                Total : <span id="cartTotal">0</span> FCFA
+            </div>
+
+            <div class="cart-actions">
+                <button class="btn" style="background: #f44336; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;" onclick="clearCart()">🗑️ Vider le panier</button>
+                <a href="checkout.html" class="btn" style="background: #4CAF50; color: white; text-decoration: none; padding: 10px 20px; border-radius: 4px; display: inline-block;">✅ Passer la commande</a>
+            </div>
+        </div>
+
+        <div id="emptyCartMessage" style="display: none; text-align: center; margin-top: 40px; font-size: 1.2em;">
+            <p>Votre panier est actuellement vide. 🛒</p>
+            <a href="products.html" class="btn" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 4px;">Parcourir la boutique</a>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour afficher dynamiquement les articles sauvegardés localement
+        function displayCart() {
+            const cartItems = document.getElementById("cartItems");
+            const cartTotal = document.getElementById("cartTotal");
+            const cartContent = document.getElementById("cartContent");
+            const emptyCartMessage = document.getElementById("emptyCartMessage");
+
+            // Récupérer les articles stockés
+            let cart = JSON.parse(localStorage.getItem('gbw_cart')) || [];
+
+            if (cart.length === 0) {
+                cartContent.style.display = "none";
+                emptyCartMessage.style.display = "block";
+                return;
+            }
+
+            cartContent.style.display = "block";
+            emptyCartMessage.style.display = "none";
+            cartItems.innerHTML = "";
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.price} FCFA</td>
+                    <td>${item.quantity}</td>
+                    <td>${itemTotal} FCFA</td>
+                    <td><button style="background:none; border:none; color:#f44336; cursor:pointer; font-weight:bold;" onclick="removeItem(${index})">❌ Supprimer</button></td>
+                `;
+                cartItems.appendChild(row);
+            });
+
+            cartTotal.textContent = total;
+        }
+
+        // Supprimer un seul produit
+        function removeItem(index) {
+            let cart = JSON.parse(localStorage.getItem('gbw_cart')) || [];
+            cart.splice(index, 1);
+            localStorage.setItem('gbw_cart', JSON.stringify(cart));
+            displayCart();
+        }
+
+        // Vider totalement le panier
+        function clearCart() {
+            localStorage.removeItem('gbw_cart');
+            displayCart();
+        }
+
+        // Charger le panier au démarrage de la page
+        displayCart();
+    </script>
+</body>
+</html>
 
