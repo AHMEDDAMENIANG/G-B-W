@@ -1,1 +1,51 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation de la commande - Global Business World</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
+    <nav>
+        <a href="cart.html">⬅️ Retour au Panier</a>
+    </nav>
+
+    <div class="container">
+        <h1>Finaliser votre commande</h1>
+        <p>Veuillez renseigner vos informations de livraison ci-dessous.</p>
+
+        <form id="checkoutForm" style="margin-top: 20px;">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="clientName" style="display: block; margin-bottom: 5px; text-align: left;">Nom complet :</label>
+                <input type="text" id="clientName" placeholder="Ex: Adama Diop" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="clientPhone" style="display: block; margin-bottom: 5px; text-align: left;">Numéro de téléphone :</label>
+                <input type="tel" id="clientPhone" placeholder="Ex: 77XXXXXXX" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="deliveryCity" style="display: block; margin-bottom: 5px; text-align: left;">Ville :</label>
+                <input type="text" id="deliveryCity" placeholder="Ex: Dakar, Kaolack, Thies..." required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="clientAddress" style="display: block; margin-bottom: 5px; text-align: left;">Adresse de livraison précise :</label>
+                <input type="text" id="clientAddress" placeholder="Ex: Quartier Medina, Rue 10" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+
+            <button class="btn" type="submit" style="background: #4CAF50; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; width: 100%;">
+                Confirmé et commander
+            </button>
+        </form>
+    </div>
+
+    <!-- Chargement des scripts obligatoires -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="checkout.js"></script>
+</body>
+</html>
