@@ -4,48 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion - Global Business World</title>
-
     <link rel="stylesheet" href="css/style.css">
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<div class="container">
+    <div class="container">
+        <h1>Connexion</h1>
 
-    <h1>Connexion</h1>
+        <form id="loginForm">
+            <input 
+                type="email" 
+                id="email" 
+                placeholder="Adresse e-mail" 
+                required
+            >
+            
+            <input 
+                type="password" 
+                id="password" 
+                placeholder="Mot de passe" 
+                required
+            >
 
-    <form id="loginForm">
+            <button class="btn" type="submit">
+                Se connecter
+            </button>
+        </form>
 
-        <input
-            type="email"
-            id="email"
-            placeholder="Adresse e-mail"
-            required
-        >
+        <p>
+            Vous n'avez pas de compte ? 
+            <a href="register.html">Créer un compte</a>
+        </p>
+    </div>
 
-        <input
-            type="password"
-            id="password"
-            placeholder="Mot de passe"
-            required
-        >
-
-        <button class="btn" type="submit">
-            Se connecter
-        </button>
-
-    </form>
-
-    <p>
-        Vous n'avez pas de compte ?
-        <a href="register.html">Créer un compte</a>
-    </p>
-
-</div>
-
-<script src="supabase.js"></script>
-<script src="auth.js"></script>
-
+    <!-- Regroupement de tous les scripts en bas pour un chargement optimal -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
 </body>
 </html>
