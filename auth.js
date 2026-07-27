@@ -9,14 +9,14 @@ if (registerForm) {
 
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
-        const role = document.getElementById("role").value; // <--- AJOUTER CETTE LIGNE
+        const role = document.getElementById("role").value;
 
         const { error } = await supabase.auth.signUp({
             email: email,
             password: password,
             options: {
                 data: {
-                    role: role // <--- AJOUTER CE BLOC OPTIONS
+                    role: role
                 }
             }
         });
@@ -30,3 +30,42 @@ if (registerForm) {
     });
 }
 
+// =====================================
+// CONNEXION
+// =====================================
+const loginForm = document.getElementById("loginForm");
+
+if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        const { error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            alert(error.message);
+        } else {
+            window.location.href = "dashboard.html";
+        }
+    });
+}
+
+// =====================================
+// DÉCONNEXION
+// =====================================
+async function logout(event) {
+    if (event) event.preventDefault();
+    
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+        alert("Erreur lors de la déconnexion : " + error.message);
+    } else {
+        window.location.href = "login.html";
+    }
+}
