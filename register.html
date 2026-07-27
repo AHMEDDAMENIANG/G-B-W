@@ -4,48 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription - Global Business World</title>
-
     <link rel="stylesheet" href="css/style.css">
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-<div class="container">
+    <div class="container">
+        <h1>Créer un compte</h1>
 
-    <h1>Créer un compte</h1>
+        <form id="registerForm">
+            <input 
+                type="email" 
+                id="email" 
+                placeholder="Adresse e-mail" 
+                required
+            >
+            
+            <input 
+                type="password" 
+                id="password" 
+                placeholder="Mot de passe" 
+                required
+            >
 
-    <form id="registerForm">
+            <!-- Nouveau champ pour choisir le type de compte -->
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="role" style="display: block; margin-bottom: 5px; text-align: left;">Je suis un :</label>
+                <select id="role" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="client">Acheteur / Client</option>
+                    <option value="supplier">Fournisseur / Vendeur</option>
+                </select>
+            </div>
 
-        <input
-            type="email"
-            id="email"
-            placeholder="Adresse e-mail"
-            required
-        >
+            <button class="btn" type="submit">
+                S'inscrire
+            </button>
+        </form>
 
-        <input
-            type="password"
-            id="password"
-            placeholder="Mot de passe"
-            required
-        >
+        <p>
+            Vous avez déjà un compte ? 
+            <a href="login.html">Se connecter</a>
+        </p>
+    </div>
 
-        <button class="btn" type="submit">
-            S'inscrire
-        </button>
-
-    </form>
-
-    <p>
-        Vous avez déjà un compte ?
-        <a href="login.html">Se connecter</a>
-    </p>
-
-</div>
-
-<script src="supabase.js"></script>
-<script src="auth.js"></script>
-
+    <!-- Regroupement de tous les scripts en bas pour un chargement optimal -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase.js"></script>
+    <script src="auth.js"></script>
 </body>
 </html>
+
