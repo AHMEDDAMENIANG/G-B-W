@@ -9,16 +9,22 @@ if (registerForm) {
 
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
+        const role = document.getElementById("role").value; // Récupère 'client' ou 'supplier'
 
         const { error } = await supabase.auth.signUp({
             email: email,
-            password: password
+            password: password,
+            options: {
+                data: {
+                    role: role // Enregistre le rôle dans les métadonnées de l'utilisateur
+                }
+            }
         });
 
         if (error) {
             alert(error.message);
         } else {
-            alert("Inscription réussie ! Vérifiez vos e-mails.");
+            alert("Inscription réussie ! Vérifiez vos e-mails pour valider votre compte.");
             window.location.href = "login.html";
         }
     });
