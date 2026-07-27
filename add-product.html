@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter un produit - Global Business World</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <nav>
+        <a href="dashboard.html">⬅️ Retour au Tableau de Bord</a>
+    </nav>
+
+    <div class="container">
+        <h1>Ajouter un nouveau produit</h1>
+        <p>Remplissez ce formulaire pour publier un article sur la marketplace.</p>
+
+        <form id="addProductForm" style="margin-top: 20px;">
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="productName" style="display: block; margin-bottom: 5px; text-align: left;">Nom du produit :</label>
+                <input type="text" id="productName" placeholder="Ex: Sac en cuir" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="productPrice" style="display: block; margin-bottom: 5px; text-align: left;">Prix (FCFA) :</label>
+                <input type="number" id="productPrice" placeholder="Ex: 15000" required style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="productDescription" style="display: block; margin-bottom: 5px; text-align: left;">Description :</label>
+                <textarea id="productDescription" placeholder="Décrivez votre produit..." rows="4" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc; font-family: sans-serif;"></textarea>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="productImage" style="display: block; margin-bottom: 5px; text-align: left;">Lien de l'image (URL) :</label>
+                <input type="url" id="productImage" placeholder="Ex: https://site.com" style="width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #ccc;">
+            </div>
+
+            <button class="btn" type="submit" style="background: #4CAF50; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">Publier l'article</button>
+        </form>
+    </div>
+
+    <!-- SDK Supabase et scripts locaux -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="supabase.js"></script>
+    
+    <script>
+        // Sécurité : Vérifier que l'utilisateur est connecté et qu'il est bien fournisseur
+        async function checkAccess() {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            
+            if (error || !user || user.user_metadata?.role !== "supplier") {
+                alert("Accès refusé. Vous devez être connecté en tant que fournisseur.");
+                window.location.href = "dashboard.html";
+            }
+        }
+        checkAccess();
+
+        // Envoi du produit dans Supabase lors de la soumission du formulaire
+        const addProductForm = document.getElementById("addProductForm");
+        
+        addProductForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById("productName").value;
+            const price = parseInt(document.getElementById("productPrice").value);
+            const description = document.getElementById("productDescription").value;
+            const imageUrl = document.getElementById("productImage").value;
+
+            // Insertion dans la table 'products'
+            const { error } = await supabase
+                .from('products')
+                .insert([
+                    { 
+                        name: name, 
+                        price: price, 
+                        description: description, 
+                        image_url: imageUrl,
+                        partner_id: 1 // Relié par défaut au premier partenaire créé
+                    }
+                ]);
+
+            if (error) {
+                alert("Erreur lors de l'ajout : " + error.message);
+            } else {
+                alert("Produit ajouté avec succès sur GLOBAL BUSINESS WORLD !");
+                addProductForm.reset(); // Vide le formulaire
+                window.location.href = "products.html"; // Redirige vers la boutique pour voir le produit
+            }
+        });
+    </script>
+</body>
+</html>
