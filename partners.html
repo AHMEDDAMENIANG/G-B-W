@@ -1,1 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration Partenaires - Global Business World</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .partner-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            background: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .partner-info h3 {
+            margin: 0 0 5px 0;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .status-actif { background: #e8f5e9; color: #2e7d32; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="dashboard.html">⬅️ Retour au Dashboard</a>
+    </nav>
+
+    <div class="container">
+        <h1>Liste des Partenaires & Fournisseurs</h1>
+        <p>Aperçu administratif de la plateforme GLOBAL BUSINESS WORLD.</p>
+        
+        <div id="loadingMessage">Chargement des partenaires...</div>
+        <div id="partnersList"></div>
+    </div>
+
+    <!-- Scripts et SDK obligatoires -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="supabase.js"></script>
+
+    <script>
+        async function loadPartners() {
+            // Récupération de tous les profils de la table 'partners' ou 'suppliers'
+            // Remplacez 'partners' par le nom exact de votre table si nécessaire
+            const { data: partners, error } = await supabase
+                .from('partners')
+                .select('*');
+
+            const loadingMessage = document.getElementById("loadingMessage");
+            const partnersList = document.getElementById("partnersList");
+
+            if (error) {
+                loadingMessage.textContent = "Erreur de chargement : " + error.message;
+                return;
+            }
+
+            if (!partners || partners.length === 0) {
+                loadingMessage.textContent = "Aucun partenaire enregistré pour le moment.";
+                return;
+            }
+
+            loadingMessage.style.display = "none";
+            partnersList.innerHTML = "";
+
+            partners.forEach(partner => {
+                const card = document.createElement("div");
+                card.className = "partner-card";
+
+                card.innerHTML = `
+                    <div class="partner-info">
+                        <h3>${partner.company_name || partner.name || 'Nom non renseigné'}</h3>
+                        <p><strong>Contact :</strong> ${partner.email || partner.phone || 'Non renseigné'}</p>
+                    </div>
+                    <div>
+                        <span class="status-badge status-actif">Actif</span>
+                    </div>
+                `;
+                partnersList.appendChild(card);
+            });
+        }
+
+        // Lancement au chargement de la page
+        loadPartners();
+    </script>
+</body>
+</html>
 
