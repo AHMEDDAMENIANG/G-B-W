@@ -18,7 +18,7 @@
 
     <div class="container">
         <h1>Bienvenue sur votre tableau de bord</h1>
-        
+
         <!-- Informations générales du compte -->
         <div class="card">
             <h2>Informations du compte</h2>
@@ -31,8 +31,8 @@
             <h2>Espace Fournisseur</h2>
             <p>Gérez vos articles et suivez vos ventes sur la plateforme :</p>
             <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <a href="add-product.html" class="btn" style="display: inline-block; padding: 10px 15px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">➕ Ajouter un produit</a>
-                <a href="orders.html" class="btn" style="display: inline-block; padding: 10px 15px; background: #2196F3; color: white; text-decoration: none; border-radius: 4px;">📦 Voir les commandes</a>
+                <a href="add-product.html" class="btn" style="display: inline-block; padding: 10px 15px; background: #4CAF50; color: white; text-decoration: none; border-radius: 4px;">Ajouter un produit</a>
+                <a href="orders.html" class="btn" style="display: inline-block; padding: 10px 15px; background: #2196F3; color: white; text-decoration: none; border-radius: 4px;">Voir les commandes</a>
             </div>
         </div>
     </div>
@@ -40,7 +40,7 @@
     <!-- Scripts de configuration et de logique -->
     <script src="supabase.js"></script>
     <script src="auth.js"></script>
-    
+
     <script>
         // Vérification de la session et personnalisation de l'affichage
         async function checkUser() {
@@ -54,12 +54,25 @@
             // 1. Afficher l'adresse email
             document.getElementById("userEmail").textContent = user.email;
 
-            // 2. Récupérer le rôle dans les métadonnées de Supabase Auth
-            const role = user.user_metadata?.role;
+            // 2. Récupération sécurisée du rôle depuis la base de données
+            const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single();
 
+            if (profileError || !profile) {
+                console.error("Erreur de profil:", profileError);
+                document.getElementById("userRole").textContent = "Erreur de chargement";
+                return;
+            }
+
+            const role = profile.role;
+
+            // 3. Personnalisation de l'affichage selon le rôle
             if (role === "supplier") {
                 document.getElementById("userRole").textContent = "Fournisseur / Vendeur";
-                document.getElementById("supplierSection").style.display = "block"; // Affiche l'espace vendeur
+                document.getElementById("supplierSection").style.display = "block";
             } else {
                 document.getElementById("userRole").textContent = "Acheteur / Client";
             }
@@ -69,4 +82,3 @@
     </script>
 </body>
 </html>
-
