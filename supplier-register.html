@@ -1,1 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription Fournisseur - Global Business World</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        .register-container { max-width: 400px; margin: 40px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn-submit { width: 100%; padding: 12px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; }
+        .btn-submit:hover { background-color: #45a049; }
+    </style>
+</head>
+<body>
 
+    <nav>
+        <a href="index.html">Accueil</a>
+        <a href="login.html">Connexion</a>
+    </nav>
+
+    <div class="register-container">
+        <h2>Inscription Grossiste / Fournisseur</h2>
+        <form id="supplierRegisterForm">
+            <div class="form-group">
+                <label for="companyName">Nom de l'entreprise / Boutique</label>
+                <input type="text" id="companyName" required placeholder="Ex: KAS APPLE">
+            </div>
+            <div class="form-group">
+                <label for="supplierEmail">Adresse Email</label>
+                <input type="email" id="supplierEmail" required placeholder="exemple@mail.com">
+            </div>
+            <div class="form-group">
+                <label for="supplierPassword">Mot de passe</label>
+                <input type="password" id="supplierPassword" required placeholder="6 caractères minimum">
+            </div>
+            <button type="submit" class="btn-submit">Créer mon compte vendeur</button>
+        </form>
+    </div>
+
+    <script src="supabase.js"></script>
+    <script>
+        document.getElementById("supplierRegisterForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const companyName = document.getElementById("companyName").value;
+            const email = document.getElementById("supplierEmail").value;
+            const password = document.getElementById("supplierPassword").value;
+
+            try {
+                // Inscription dans Supabase Auth avec passage du rôle dans les métadonnées
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            role: 'supplier',
+                            company_name: companyName
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                alert("Inscription réussie ! Vous pouvez maintenant vous connecter à votre espace.");
+                window.location.href = "login.html";
+
+            } catch (error) {
+                alert("Erreur lors de l'inscription : " + error.message);
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
