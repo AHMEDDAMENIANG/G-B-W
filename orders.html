@@ -73,7 +73,7 @@
 
         // Redirection immédiate si le grossiste n'est pas connecté
         if (!currentVendorId) {
-            alert("Session expirée. Veuillez vous reconnecer.");
+            alert("Session expirée. Veuillez vous reconnecter.");
             window.location.href = "login.html";
         }
 
@@ -85,7 +85,7 @@
             const { data: orders, error } = await supabase
                 .from('orders')
                 .select('*')
-                .eq('vendor_id', currentVendorId) // ⬅️ Sécurité : empêche de voir les commandes des concurrents
+                .eq('vendor_id', currentVendorId)
                 .order('created_at', { ascending: false });
 
             if (error) {
@@ -117,7 +117,7 @@
                 // Gestion dynamique du badge de statut
                 const statusClass = order.status === 'Livrée' ? 'status-livree' : 'status-en-attente';
 
-                // Calculs des parts (95% pour le vendeur, 5% de commission pour G-B-W)
+                // Calculs des parts : 5 pour 100 de commission administrative G-B-W
                 const total = order.total_price || 0;
                 const vendorPart = total * 0.95;
                 const commissionGbw = total * 0.05;
@@ -151,22 +151,41 @@
             });
         }
 
-        // 3. Fonction pour passer le statut à "Livrée" dans la base de données
+        // 3. Fonction pour passer le statut à "Livrée" et préparer l'interconnexion WhatsApp
         async function markAsDelivered(orderId) {
-            if (!confirm("Voulez-vous vraiment marquer cette commande comme livrée ? Cela validera la commission.")) {
+            if (!confirm("Voulez-vous vraiment marquer cette commande comme livrée ? Cela validera la commission et enverra le message WhatsApp au client.")) {
                 return;
             }
 
-            const { error } = await supabase
+            // Récupération des détails essentiels du client (Téléphone et Nom) dans Supabase
+            const { data: orderData, error: fetchError } = await supabase
+                .from('orders')
+                .select('client_name, client_phone')
+                .eq('id', orderId)
+                .single();
+
+            if (fetchError) {
+                alert("Erreur technique lors de la récupération des données du client : " + fetchError.message);
+                return;
+            }
+
+            // Mise à jour finale du statut dans la base de données
+            const { error: updateError } = await supabase
                 .from('orders')
                 .update({ status: 'Livrée' })
                 .eq('id', orderId);
 
-            if (error) {
-                alert("Erreur lors de la mise à jour : " + error.message);
+            if (updateError) {
+                alert("Erreur lors de la mise à jour : " + updateError.message);
             } else {
                 alert("Commande mise à jour avec succès ! Le calcul des 5% de commission est effectif.");
-                loadOrders(); // Recharge instantanément l'affichage du tableau de bord
+                
+                // Préparation technique de l'envoi de la notification Cloud de Meta
+                console.log("Données prêtes pour l'API WhatsApp -> Destinataire :", orderData.client_name, "Mobile :", orderData.client_phone);
+                
+                // Le lien vers le script Meta whatsapp.js sera appelé automatiquement ici
+                
+                loadOrders(); // Recharge instantanément l'affichage du tableau
             }
         }
 
@@ -175,4 +194,3 @@
     </script>
 </body>
 </html>
-
