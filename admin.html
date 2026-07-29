@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Administrateur - G-B-W</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-container { padding: 20px; max-width: 1200px; margin: auto; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid #ddd; text-align: center; }
+        .stat-number { font-size: 24px; font-weight: bold; color: #4caf50; margin-top: 10px; }
+        .stat-commission { font-size: 28px; font-weight: bold; color: #e57373; margin-top: 10px; }
+        .orders-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .orders-table th, .orders-table td { padding: 12px 15px; border-bottom: 1px solid #ddd; text-align: left; }
+        .orders-table th { background-color: #333; color: white; }
+        .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.9em; font-weight: bold; }
+        .status-livree { background: #e8f5e9; color: #2e7d32; }
+        .status-attente { background: #fffde7; color: #f57f17; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="dashboard.html">⬅️ Retour au Dashboard Général</a>
+    </nav>
+
+    <div class="admin-container">
+        <h1>👑 Coffre-Fort Administrateur G-B-W</h1>
+        <p>Suivi global de l'activité du réseau et de vos gains financiers.</p>
+
+        <!-- Grille des statistiques financières -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Chiffre d'Affaires Global</h3>
+                <div class="stat-number" id="totalVolume">0 FCFA</div>
+            </div>
+            <div class="stat-card" style="border: 2px solid #e57373;">
+                <h3>Vos Commissions Cumulées (5%)</h3>
+                <div class="stat-commission" id="totalCommissions">0 FCFA</div>
+            </div>
+            <div class="stat-card">
+                <h3>Commandes Totales</h3>
+                <div class="stat-number" id="totalOrdersCount" style="color: #2196f3;">0</div>
+            </div>
+        </div>
+
+        <h2>📦 Historique de toutes les transactions du réseau</h2>
+        <div style="overflow-x: auto;">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>Commande</th>
+                        <th>Grossiste (ID)</th>
+                        <th>Client</th>
+                        <th>Montant Total</th>
+                        <th>Votre Commission (5%)</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody id="adminOrdersRoute">
+                    <tr>
+                        <td colspan="6" style="text-align: center;">Chargement des données financières secrètes...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- SDK Supabase -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="supabase.js"></script>
+
+    <script>
+        async function loadAdminData() {
+            const adminOrdersRoute = document.getElementById("adminOrdersRoute");
+            const totalVolume = document.getElementById("totalVolume");
+            const totalCommissions = document.getElementById("totalCommissions");
+            const totalOrdersCount = document.getElementById("totalOrdersCount");
+
+            // Requête globale sans filtre : l'admin voit tout le réseau informatique !
+            const { data: allOrders, error } = await supabase
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                adminOrdersRoute.innerHTML = `<tr><td colspan="6" style="color: red; text-align: center;">Erreur : ${error.message}</td></tr>`;
+                return;
+            }
+
+            if (!allOrders || allOrders.length === 0) {
+                adminOrdersRoute.innerHTML = `<tr><td colspan="6" style="text-align: center;">Aucune transaction enregistrée sur le réseau pour le moment.</td></tr>`;
+                return;
+            }
+
+            // Variables de calculs financiers
+            let volumeCumule = 0;
+            let commissionsCumulees = 0;
+            adminOrdersRoute.innerHTML = "";
+
+            allOrders.forEach(order => {
+                const total = order.total_price || 0;
+                const commission = total * 0.05; // Calcul strict des 5% de commission administrative
+                
+                volumeCumule += total;
+                commissionsCumulees += commission;
+
+                const statusClass = order.status === 'Livrée' ? 'status-livree' : 'status-attente';
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td><strong>#${order.id}</strong></td>
+                    <td><span style="color: #757575; font-family: monospace;">${order.vendor_id || 'Inconnu'}</span></td>
+                    <td>${order.client_name || 'Non renseigné'}</td>
+                    <td><strong>${total.toLocaleString()} FCFA</strong></td>
+                    <td style="color: #e57373; font-weight: bold;">+ ${commission.toLocaleString()} FCFA</td>
+                    <td><span class="status-badge ${statusClass}">${order.status || 'En attente'}</span></td>
+                `;
+                adminOrdersRoute.appendChild(row);
+            });
+
+            // Affichage dans les compteurs du haut
+            totalVolume.textContent = `${volumeCumule.toLocaleString()} FCFA`;
+            totalCommissions.textContent = `${commissionsCumulees.toLocaleString()} FCFA`;
+            totalOrdersCount.textContent = allOrders.length;
+        }
+
+        // Lancement au chargement
+        loadAdminData();
+    </script>
+</body>
+</html>
+
