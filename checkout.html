@@ -15,15 +15,33 @@ document.addEventListener('DOMContentLoaded', () => {
             // Combinaison de la ville et de l'adresse pour correspondre à votre colonne SQL
             const fullAddress = `${deliveryCity} - ${clientAddress}`;
 
-            // 2. Récupération des données dynamiques (Exemples à adapter)
-            // Note : récupérez ici l'ID du vendeur connecté et le contenu du panier
-            const vendorId = "00000000-0000-0000-0000-000000000000"; // Remplacez par l'ID réel ou null
-            const totalPrice = 0; // Remplacez par le calcul du total de votre panier
-            const itemsList = []; // Remplacez par votre tableau d'objets du panier
+            // 2. Récupération dynamique des données du panier (localStorage)
+            // On récupère le panier ou un tableau vide si aucun article n'existe
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            // Sécurité : Bloquer la commande si le panier est vide
+            if (cart.length === 0) {
+                alert("Votre panier est vide. Impossible de passer commande.");
+                return;
+            }
+
+            // Calcul automatique du montant total (adapter 'price' et 'quantity' selon vos clés)
+            const totalPrice = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+
+            // Structuration propre de la liste des produits pour votre colonne JSONB
+            const itemsList = cart.map(item => ({
+                id: item.id || null,
+                name: item.name,
+                quantity: item.quantity,
+                price: item.price
+            }));
+
+            // Identifiant du vendeur (Mettre null si vous ne gérez pas encore les sessions de connexion vendeur)
+            const vendorId = null; 
 
             try {
-                // 3. Insertion dans la table Supabase
-                // 'supabase' provient du fichier supabase.js chargé à la ligne 48
+                // 3. Insertion dans la table Supabase 'orders'
+                // 'supabase' provient du fichier supabase.js chargé juste avant dans le HTML
                 const { data, error } = await supabase
                     .from('orders')
                     .insert([
@@ -39,14 +57,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (error) throw error;
 
-                // 4. Action après succès
+                // 4. Actions après le succès de la commande
                 alert('Commande validée avec succès !');
-                // Optionnel : vider le panier local et rediriger l'utilisateur
-                // window.location.href = 'index.html';
+                
+                // Vider le panier dans le navigateur du client
+                localStorage.removeItem('cart'); 
+                
+                // Rediriger le client vers la page d'accueil ou de suivi
+                window.location.href = 'index.html';
 
             } catch (error) {
                 console.error("Erreur lors de la commande :", error.message);
-                alert("Une erreur est survenue lors de la validation de la commande.");
+                alert("Une erreur est survenue lors de la validation : " + error.message);
             }
         });
     }
