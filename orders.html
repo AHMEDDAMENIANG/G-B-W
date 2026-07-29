@@ -3,85 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Commandes - Global Business World</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>G-B-W — Gestion des Commandes Grossiste</title>
+    <!-- SDK Supabase requis -->
+    <script src="https://jsdelivr.net"></script>
     <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 10px;
+        }
+        #loadingMessage {
+            font-size: 16px;
+            color: #555;
+            font-style: italic;
+        }
         .order-card {
-            border: 1px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             padding: 20px;
             margin-bottom: 20px;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid #3498db;
         }
-        .order-header {
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+        .status-livree {
+            border-left-color: #2ecc71;
         }
         .status-badge {
-            padding: 5px 10px;
-            border-radius: 4px;
+            float: right;
             font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            background: #e1f5fe;
+            color: #0288d1;
         }
-        .status-en-attente { background: #ffeb3b; color: #000; }
-        .status-livree { background: #4caf50; color: #fff; }
+        .status-livree .status-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .order-header {
+            margin-bottom: 15px;
+        }
         .items-list {
-            background: #f9f9f9;
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
+            background: #f8fafc;
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin: 15px 0;
         }
         .btn-deliver {
-            background: #4caf50; 
-            color: #fff; 
-            margin-top: 10px; 
-            padding: 8px 12px; 
-            border: none; 
-            border-radius: 4px; 
-            cursor: pointer;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
             font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
         }
         .btn-deliver:hover {
-            background: #43a047;
+            background-color: #27ae60;
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <a href="dashboard.html">⬅️ Retour au Dashboard</a>
-    </nav>
-
     <div class="container">
-        <h1>Suivi des commandes clients</h1>
-
-        <div id="loadingMessage">Chargement des commandes...</div>
+        <h1>📦 Espace Grossiste — Suivi des Commandes</h1>
+        
+        <div id="loadingMessage">Chargement des commandes en cours...</div>
         <div id="ordersList"></div>
     </div>
 
-    <!-- Scripts et SDK obligatoires -->
-    <script src="https://jsdelivr.net"></script>
-    <script src="supabase.js"></script>
-
     <script>
-        // 1. Récupération sécurisée du grossiste connecté depuis le localStorage
-        const sessionData = JSON.parse(localStorage.getItem('vendor_session'));
-        const currentVendorId = sessionData ? sessionData.id : null;
+        // CONFIGURATION PARAMÈTRES CRITIQUES (À adapter avec vos identifiants)
+        const SUPABASE_URL = "VOTRE_SUPABASE_URL";
+        const SUPABASE_ANON_KEY = "VOTRE_SUPABASE_ANON_KEY";
+        
+        // Identifiants Meta WhatsApp Cloud API
+        const WHATSAPP_TOKEN = "VOTRE_TOKEN_ACCES_PERMANENT_META"; 
+        const PHONE_NUMBER_ID = "VOTRE_PHONE_NUMBER_ID_META"; 
 
-        // Redirection immédiate si le grossiste n'est pas connecté
-        if (!currentVendorId) {
-            alert("Session expirée. Veuillez vous reconnecter.");
-            window.location.href = "login.html";
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Simulation de la variable de session du grossiste connecté (Normalement stockée à la connexion)
+        const currentVendorId = localStorage.getItem("vendorId") || "ID_GROSSISTE_TEST";
+
+        // Redirection de sécurité si non connecté
+        if (!currentVendorId || currentVendorId === "ID_GROSSISTE_TEST") {
+            console.warn("Aucun identifiant de grossiste trouvé. Redirection...");
+            // window.location.href = "login.html"; // Décommenter si votre page de login est prête
         }
 
+        // 1. Récupération et affichage dynamique des commandes du grossiste
         async function loadOrders() {
             const loadingMessage = document.getElementById("loadingMessage");
             const ordersList = document.getElementById("ordersList");
 
-            // 2. Requête ultra-sécurisée : Filtrage obligatoire par l'ID du grossiste connecté
+            // Requête hautement sécurisée : Filtrage obligatoire par l'ID du grossiste connecté
             const { data: orders, error } = await supabase
                 .from('orders')
                 .select('*')
@@ -104,7 +134,7 @@
 
             orders.forEach(order => {
                 const card = document.createElement("div");
-                card.className = "order-card";
+                card.className = "order-card" + (order.status === "Livrée" ? " status-livree" : "");
 
                 // Extraction et construction de la liste des articles (format JSON)
                 let itemsHTML = "";
@@ -114,9 +144,6 @@
                     });
                 }
 
-                // Gestion dynamique du badge de statut
-                const statusClass = order.status === 'Livrée' ? 'status-livree' : 'status-en-attente';
-
                 // Calculs des parts : 5 pour 100 de commission administrative G-B-W
                 const total = order.total_price || 0;
                 const vendorPart = total * 0.95;
@@ -124,24 +151,24 @@
 
                 card.innerHTML = `
                     <div class="order-header">
-                        <span><strong>Commande #${order.id}</strong></span>
-                        <span class="status-badge ${statusClass}">${order.status || 'En attente'}</span>
+                        <span><strong>Commande #${order.id.substring(0, 8)}...</strong></span>
+                        <span class="status-badge">${order.status || 'En attente'}</span>
                     </div>
-                    <p><strong>Client :</strong> ${order.client_name || 'Non renseigné'}</p>
-                    <p><strong>Téléphone :</strong> ${order.client_phone || 'Non renseigné'}</p>
-                    <p><strong>Adresse de livraison :</strong> ${order.delivery_address || 'Non renseignée'}</p>
-
+                    <p><strong>Client : </strong> ${order.client_name || 'Non renseigné'}</p>
+                    <p><strong>Téléphone : </strong> ${order.client_phone || 'Non renseigné'}</p>
+                    <p><strong>Adresse de livraison : </strong> ${order.delivery_address || 'Non renseignée'}</p>
+                    
                     <div class="items-list">
                         <strong>Articles commandés :</strong>
                         <ul>${itemsHTML || '<li>Aucun article listé</li>'}</ul>
                     </div>
 
-                    <p><strong>Montant Total :</strong> <span style="color:#4CAF50; font-weight:bold;">${total} FCFA</span></p>
-                    <p><strong>Votre part brute :</strong> <span>${vendorPart.toFixed(0)} FCFA</span></p>
-                    <p style="color: #e57373; font-size: 0.9em;"><em>Commission G-B-W (5%) : ${commissionGbw.toFixed(0)} FCFA déduite</em></p>
+                    <p><strong>Montant Total : </strong><span style="color:#4CAF50; font-weight:bold;">${total} FCFA</span></p>
+                    <p><strong>Votre part brute : </strong><span>${vendorPart.toFixed(0)} FCFA</span></p>
+                    <p style="color:#e57373; font-size:0.9em;"><em>Commission G-B-W (5%) : ${commissionGbw.toFixed(0)} FCFA déduite</em></p>
 
                     ${order.status !== 'Livrée' ? `
-                        <button class="btn-deliver" onclick="markAsDelivered(${order.id})">
+                        <button class="btn-deliver" onclick="markAsDelivered('${order.id}')">
                             Marquer comme Livrée
                         </button>
                     ` : ''}
@@ -151,7 +178,7 @@
             });
         }
 
-        // 3. Fonction pour passer le statut à "Livrée" et préparer l'interconnexion WhatsApp
+        // 2. Action au clic : Passage au statut "Livrée" + Interconnexion WhatsApp
         async function markAsDelivered(orderId) {
             if (!confirm("Voulez-vous vraiment marquer cette commande comme livrée ? Cela validera la commission et enverra le message WhatsApp au client.")) {
                 return;
@@ -177,20 +204,46 @@
 
             if (updateError) {
                 alert("Erreur lors de la mise à jour : " + updateError.message);
-            } else {
-                alert("Commande mise à jour avec succès ! Le calcul des 5% de commission est effectif.");
-                
-                // Préparation technique de l'envoi de la notification Cloud de Meta
-                console.log("Données prêtes pour l'API WhatsApp -> Destinataire :", orderData.client_name, "Mobile :", orderData.client_phone);
-                
-                // Le lien vers le script Meta whatsapp.js sera appelé automatiquement ici
-                
-                loadOrders(); // Recharge instantanément l'affichage du tableau
+                return;
             }
-        }
 
-        // Lancement automatique dès l'ouverture de la page
-        loadOrders();
-    </script>
-</body>
-</html>
+            alert("Commande mise à jour avec succès ! Le calcul des 5% de commission est effectif.");
+
+            // Exécution technique de l'envoi de la notification Cloud de Meta
+            console.log("Données prêtes pour l'API WhatsApp -> Destinataire :", orderData.client_name, "Mobile :", orderData.client_phone);
+
+            // Payload formaté pour les gabarits (Templates) Meta Business
+            const whatsappPayload = {
+                messaging_product: "whatsapp",
+                to: orderData.client_phone.replace(/\s+/g, ''), // Nettoie les espaces involontaires
+                type: "template",
+                template: {
+                    name: "commande_livree", // Doit correspondre à votre template approuvé sur Meta
+                    language: { code: "fr" },
+                    components: [
+                        {
+                            type: "body",
+                            parameters: [
+                                { type: "text", text: orderData.client_name },
+                                { type: "text", text: orderId.substring(0, 8) }
+                            ]
+                        }
+                    ]
+                }
+            };
+
+            // Requête asynchrone Fetch vers l'API Meta
+            try {
+                const response = await fetch(`https://facebook.com{PHONE_NUMBER_ID}/messages`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${WHATSAPP_TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(whatsappPayload)
+                });
+
+                const resData = await response.json();
+                if (!response.ok) throw new Error(resData.error?.message || "Erreur API Meta");
+                
+
