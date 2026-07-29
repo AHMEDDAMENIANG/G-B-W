@@ -34,6 +34,19 @@
             border-radius: 4px;
             margin: 10px 0;
         }
+        .btn-deliver {
+            background: #4caf50; 
+            color: #fff; 
+            margin-top: 10px; 
+            padding: 8px 12px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-deliver:hover {
+            background: #43a047;
+        }
     </style>
 </head>
 <body>
@@ -44,25 +57,36 @@
 
     <div class="container">
         <h1>Suivi des commandes clients</h1>
-        
+
         <div id="loadingMessage">Chargement des commandes...</div>
         <div id="ordersList"></div>
     </div>
 
     <!-- Scripts et SDK obligatoires -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://jsdelivr.net"></script>
     <script src="supabase.js"></script>
 
     <script>
+        // 1. Récupération sécurisée du grossiste connecté depuis le localStorage
+        const sessionData = JSON.parse(localStorage.getItem('vendor_session'));
+        const currentVendorId = sessionData ? sessionData.id : null;
+
+        // Redirection immédiate si le grossiste n'est pas connecté
+        if (!currentVendorId) {
+            alert("Session expirée. Veuillez vous reconnecer.");
+            window.location.href = "login.html";
+        }
+
         async function loadOrders() {
-            // Récupération de toutes les commandes enregistrées dans Supabase
+            const loadingMessage = document.getElementById("loadingMessage");
+            const ordersList = document.getElementById("ordersList");
+
+            // 2. Requête ultra-sécurisée : Filtrage obligatoire par l'ID du grossiste connecté
             const { data: orders, error } = await supabase
                 .from('orders')
                 .select('*')
+                .eq('vendor_id', currentVendorId) // ⬅️ Sécurité : empêche de voir les commandes des concurrents
                 .order('created_at', { ascending: false });
-
-            const loadingMessage = document.getElementById("loadingMessage");
-            const ordersList = document.getElementById("ordersList");
 
             if (error) {
                 loadingMessage.textContent = "Erreur de chargement : " + error.message;
@@ -71,6 +95,7 @@
 
             if (!orders || orders.length === 0) {
                 loadingMessage.textContent = "Aucune commande reçue pour le moment.";
+                ordersList.innerHTML = "";
                 return;
             }
 
@@ -81,7 +106,7 @@
                 const card = document.createElement("div");
                 card.className = "order-card";
 
-                // Extraction des articles commandés enregistrés au format JSON
+                // Extraction et construction de la liste des articles (format JSON)
                 let itemsHTML = "";
                 if (order.items && Array.isArray(order.items)) {
                     order.items.forEach(item => {
@@ -89,37 +114,49 @@
                     });
                 }
 
-                // Détermination de la classe CSS pour le badge de statut
+                // Gestion dynamique du badge de statut
                 const statusClass = order.status === 'Livrée' ? 'status-livree' : 'status-en-attente';
+
+                // Calculs des parts (95% pour le vendeur, 5% de commission pour G-B-W)
+                const total = order.total_price || 0;
+                const vendorPart = total * 0.95;
+                const commissionGbw = total * 0.05;
 
                 card.innerHTML = `
                     <div class="order-header">
                         <span><strong>Commande #${order.id}</strong></span>
-                        <span class="status-badge ${statusClass}">${order.status}</span>
+                        <span class="status-badge ${statusClass}">${order.status || 'En attente'}</span>
                     </div>
-                    <p><strong>Client :</strong> ${order.client_name}</p>
-                    <p><strong>Téléphone :</strong> ${order.client_phone}</p>
-                    <p><strong>Adresse de livraison :</strong> ${order.delivery_address}</p>
-                    
+                    <p><strong>Client :</strong> ${order.client_name || 'Non renseigné'}</p>
+                    <p><strong>Téléphone :</strong> ${order.client_phone || 'Non renseigné'}</p>
+                    <p><strong>Adresse de livraison :</strong> ${order.delivery_address || 'Non renseignée'}</p>
+
                     <div class="items-list">
                         <strong>Articles commandés :</strong>
-                        <ul>${itemsHTML}</ul>
+                        <ul>${itemsHTML || '<li>Aucun article listé</li>'}</ul>
                     </div>
-                    
-                    <p><strong>Montant Total :</strong> <span style="color:#4CAF50; font-weight:bold;">${order.total_price} FCFA</span></p>
-                    
+
+                    <p><strong>Montant Total :</strong> <span style="color:#4CAF50; font-weight:bold;">${total} FCFA</span></p>
+                    <p><strong>Votre part brute :</strong> <span>${vendorPart.toFixed(0)} FCFA</span></p>
+                    <p style="color: #e57373; font-size: 0.9em;"><em>Commission G-B-W (5%) : ${commissionGbw.toFixed(0)} FCFA déduite</em></p>
+
                     ${order.status !== 'Livrée' ? `
-                        <button class="btn" style="background:#4caf50; color:#fff; margin-top:10px;" onclick="markAsDelivered(${order.id})">
-                            Mark as delivered / Livrée
+                        <button class="btn-deliver" onclick="markAsDelivered(${order.id})">
+                            Marquer comme Livrée
                         </button>
                     ` : ''}
                 `;
+
                 ordersList.appendChild(card);
             });
         }
 
-        // Fonction pour changer le statut de la commande en "Livrée"
+        // 3. Fonction pour passer le statut à "Livrée" dans la base de données
         async function markAsDelivered(orderId) {
+            if (!confirm("Voulez-vous vraiment marquer cette commande comme livrée ? Cela validera la commission.")) {
+                return;
+            }
+
             const { error } = await supabase
                 .from('orders')
                 .update({ status: 'Livrée' })
@@ -128,12 +165,12 @@
             if (error) {
                 alert("Erreur lors de la mise à jour : " + error.message);
             } else {
-                alert("Commande mise à jour avec succès !");
-                loadOrders(); // Recharge la liste
+                alert("Commande mise à jour avec succès ! Le calcul des 5% de commission est effectif.");
+                loadOrders(); // Recharge instantanément l'affichage du tableau de bord
             }
         }
 
-        // Lancement au chargement de la page
+        // Lancement automatique dès l'ouverture de la page
         loadOrders();
     </script>
 </body>
