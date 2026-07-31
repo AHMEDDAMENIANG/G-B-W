@@ -1,20 +1,18 @@
         // 2. Calcul du montant total de base
         let totalPrice = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
         
-        // --- NOUVEAU : Récupération et application des règles financières ---
+        // --- APPLICATION DES RÈGLES FINANCIÈRES (30% PROMO / 50% NORMAL) ---
         const maintenant = new Date();
         const estEnPromo = maintenant <= new Date("2026-10-31T23:59:59");
         const tauxAcheteur = estEnPromo ? 0.30 : 0.50;
         
-        // Ajout des frais tout inclus (livraison + douane) au total de la commande
         const fraisToutInclus = Math.round(totalPrice * tauxAcheteur);
         totalPrice = totalPrice + fraisToutInclus;
 
-        // Récupération du code promo saisi par le client dans l'interface (si existant)
+        // Récupération du code promo saisi par le client
         const codePromoInput = document.getElementById('codePromo') ? document.getElementById('codePromo').value.trim() : null;
         // ---------------------------------------------------------------------
 
-        // Structuration propre de la liste des produits pour votre colonne JSONB
         const itemsList = cart.map(item => ({
             id: item.id || null,
             name: item.name,
@@ -22,11 +20,10 @@
             price: item.price
         }));
 
-        // Identifiant du vendeur
         const vendorId = null;
 
         try {
-            // 3. Insertion dans la table Supabase 'orders' avec le code promo associé
+            // 3. Insertion dans la table Supabase 'orders' avec code_promo
             const { data, error } = await supabase
                 .from('orders')
                 .insert([
@@ -37,6 +34,6 @@
                         delivery_address: fullAddress,
                         total_price: totalPrice,
                         items: itemsList,
-                        code_promo: codePromoInput // Permet au déclencheur Supabase d'attribuer les gains
+                        code_promo: codePromoInput
                     }
                 ]);
