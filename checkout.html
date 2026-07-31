@@ -1,76 +1,42 @@
-// Attendre le chargement complet du DOM
-document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('checkoutForm');
+        // 2. Calcul du montant total de base
+        let totalPrice = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        
+        // --- NOUVEAU : Récupération et application des règles financières ---
+        const maintenant = new Date();
+        const estEnPromo = maintenant <= new Date("2026-10-31T23:59:59");
+        const tauxAcheteur = estEnPromo ? 0.30 : 0.50;
+        
+        // Ajout des frais tout inclus (livraison + douane) au total de la commande
+        const fraisToutInclus = Math.round(totalPrice * tauxAcheteur);
+        totalPrice = totalPrice + fraisToutInclus;
 
-    if (form) {
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Empêche le rechargement de la page
+        // Récupération du code promo saisi par le client dans l'interface (si existant)
+        const codePromoInput = document.getElementById('codePromo') ? document.getElementById('codePromo').value.trim() : null;
+        // ---------------------------------------------------------------------
 
-            // 1. Récupération des valeurs du formulaire HTML
-            const clientName = document.getElementById('clientName').value;
-            const clientPhone = document.getElementById('clientPhone').value;
-            const deliveryCity = document.getElementById('deliveryCity').value;
-            const clientAddress = document.getElementById('clientAddress').value;
+        // Structuration propre de la liste des produits pour votre colonne JSONB
+        const itemsList = cart.map(item => ({
+            id: item.id || null,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price
+        }));
 
-            // Combinaison de la ville et de l'adresse pour correspondre à votre colonne SQL
-            const fullAddress = `${deliveryCity} - ${clientAddress}`;
+        // Identifiant du vendeur
+        const vendorId = null;
 
-            // 2. Récupération dynamique des données du panier (localStorage)
-            // On récupère le panier ou un tableau vide si aucun article n'existe
-            const cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-            // Sécurité : Bloquer la commande si le panier est vide
-            if (cart.length === 0) {
-                alert("Votre panier est vide. Impossible de passer commande.");
-                return;
-            }
-
-            // Calcul automatique du montant total (adapter 'price' et 'quantity' selon vos clés)
-            const totalPrice = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
-
-            // Structuration propre de la liste des produits pour votre colonne JSONB
-            const itemsList = cart.map(item => ({
-                id: item.id || null,
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price
-            }));
-
-            // Identifiant du vendeur (Mettre null si vous ne gérez pas encore les sessions de connexion vendeur)
-            const vendorId = null; 
-
-            try {
-                // 3. Insertion dans la table Supabase 'orders'
-                // 'supabase' provient du fichier supabase.js chargé juste avant dans le HTML
-                const { data, error } = await supabase
-                    .from('orders')
-                    .insert([
-                        {
-                            vendor_id: vendorId,
-                            client_name: clientName,
-                            client_phone: clientPhone,
-                            delivery_address: fullAddress,
-                            total_price: totalPrice,
-                            items: itemsList
-                        }
-                    ]);
-
-                if (error) throw error;
-
-                // 4. Actions après le succès de la commande
-                alert('Commande validée avec succès !');
-                
-                // Vider le panier dans le navigateur du client
-                localStorage.removeItem('cart'); 
-                
-                // Rediriger le client vers la page d'accueil ou de suivi
-                window.location.href = 'index.html';
-
-            } catch (error) {
-                console.error("Erreur lors de la commande :", error.message);
-                alert("Une erreur est survenue lors de la validation : " + error.message);
-            }
-        });
-    }
-});
-
+        try {
+            // 3. Insertion dans la table Supabase 'orders' avec le code promo associé
+            const { data, error } = await supabase
+                .from('orders')
+                .insert([
+                    {
+                        vendor_id: vendorId,
+                        client_name: clientName,
+                        client_phone: clientPhone,
+                        delivery_address: fullAddress,
+                        total_price: totalPrice,
+                        items: itemsList,
+                        code_promo: codePromoInput // Permet au déclencheur Supabase d'attribuer les gains
+                    }
+                ]);
