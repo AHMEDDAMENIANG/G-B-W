@@ -1,1 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLOBAL BUSINESS WORLD - Inscription Apporteur d'Affaires</title>
+    <!-- Intégration de Bootstrap pour un design moderne et responsive -->
+    <link href="https://jsdelivr.net" rel="stylesheet">
+    <!-- Chargement du SDK officiel de Supabase -->
+    <script src="https://jsdelivr.net"></script>
+    <script src="supabase.js"></script>
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h2 class="text-center text-primary mb-2" style="font-weight: 800;">GLOBAL BUSINESS WORLD</h2>
+                    <h5 class="text-center text-muted mb-4">Espace Apporteurs d'Affaires</h5>
+                    
+                    <form id="formApporteur">
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: bold;">Nom et Prénom 👤</label>
+                            <input type="text" id="nom" class="form-control" placeholder="Ex: Amadou Diallo" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: bold;">Numéro WhatsApp 📱</label>
+                            <input type="tel" id="whatsapp" class="form-control" placeholder="Ex: 771234567" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: bold;">Mode de paiement préféré 💳</label>
+                            <select id="modePaiement" class="form-select" required>
+                                <option value="Wave">Wave</option>
+                                <option value="Orange Money">Orange Money</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: bold;">Numéro de réception des fonds 🔢</label>
+                            <input type="tel" id="numeroPaiement" class="form-control" placeholder="Ex: 771234567" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" style="font-weight: bold;">Quartier de résidence à Dakar 📍</label>
+                            <input type="text" id="quartierDakar" class="form-control" placeholder="Ex: Médina, Parcelles Assainies" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mt-3" style="font-weight: bold;">Activer mon compte immédiatement 🚀</button>
+                    </form>
+
+                    <!-- Zone d'affichage du Code Promo Unique après inscription -->
+                    <div id="zoneResultat" class="mt-4 d-none">
+                        <div class="alert alert-success text-center border-0 shadow-sm p-4">
+                            <h4 class="alert-heading" style="font-weight: bold;">🎉 Compte Activé !</h4>
+                            <p class="mb-3">Votre compte démarcheur est maintenant fonctionnel.</p>
+                            <div class="p-3 bg-white rounded border border-success mb-3">
+                                <span class="text-muted small d-block">VOTRE CODE PROMO UNIQUE :</span>
+                                <strong id="codePromoGenere" class="fs-4 text-success"></strong>
+                            </div>
+                            <p class="small text-muted mb-0">Partagez ce code autour de vous. Vos clients bénéficient de 30% de frais tout inclus et vous touchez vos commissions directement !</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('formApporteur').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const nom = document.getElementById('nom').value.trim();
+    const whatsapp = document.getElementById('whatsapp').value.trim();
+    const modePaiement = document.getElementById('modePaiement').value;
+    const numeroPaiement = document.getElementById('numeroPaiement').value.trim();
+    const quartierDakar = document.getElementById('quartierDakar').value.trim();
+
+    // Génération automatique d'un suffixe unique aléatoire à 4 chiffres
+    const suffixeUnique = Math.floor(1000 + Math.random() * 9000);
+    // Création du Code Promo Unique (Ex: GBW-AMA-4839)
+    const codePromo = `GBW-${nom.substring(0, 3).toUpperCase()}-${suffixeUnique}`;
+
+    try {
+        // Enregistrement immédiat dans la base de données Supabase
+        const { error } = await supabase
+            .from('apporteurs_affaires')
+            .insert([
+                {
+                    nom: nom,
+                    whatsapp: whatsapp,
+                    mode_paiement: modePaiement,
+                    numero_paiement: numeroPaiement,
+                    quartier_dakar: quartierDakar,
+                    code_promo_unique: codePromo
+                }
+            ]);
+
+        if (error) throw error;
+
+        // Affichage du code promo généré sur l'écran de l'utilisateur
+        document.getElementById('formApporteur').classList.add('d-none');
+        document.getElementById('codePromoGenere').innerText = codePromo;
+        document.getElementById('zoneResultat').classList.remove('d-none');
+
+    } catch (error) {
+        console.error("Erreur d'inscription :", error.message);
+        alert("Une erreur est survenue lors de l'activation de votre compte : " + error.message);
+    }
+});
+</script>
+
+</body>
+</html>
 
